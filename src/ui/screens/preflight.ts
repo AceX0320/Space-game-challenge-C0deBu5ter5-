@@ -77,4 +77,3 @@ export function renderPreflight(root: HTMLElement, state: GameState): void {
     transitionTo('hangar');
   });
 }
-

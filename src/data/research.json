@@ -26,7 +26,10 @@
     "name": "Lightweight Alloys",
     "branch": "materials",
     "costM": 25,
-    "requiresItems": [{ "itemId": "regolith-sample", "quantity": 3 }, { "itemId": "carbon-asteroid", "quantity": 1 }],
+    "requiresItems": [
+      { "itemId": "regolith-sample", "quantity": 3 },
+      { "itemId": "carbon-asteroid", "quantity": 1 }
+    ],
     "requiresNodes": [],
     "unlocksPartIds": ["tank-lightweight"],
     "description": "Extraterrestrial material analysis leads to improved lightweight composite alloys.",
@@ -81,7 +84,10 @@
     "name": "Astrobiology Package",
     "branch": "science",
     "costM": 60,
-    "requiresItems": [{ "itemId": "water-ice", "quantity": 1 }, { "itemId": "hydrocarbons", "quantity": 1 }],
+    "requiresItems": [
+      { "itemId": "water-ice", "quantity": 1 },
+      { "itemId": "hydrocarbons", "quantity": 1 }
+    ],
     "requiresNodes": ["science-spectrometry"],
     "unlocksPartIds": [],
     "description": "Combined water and hydrocarbon evidence opens astrobiology contracts and new instruments.",

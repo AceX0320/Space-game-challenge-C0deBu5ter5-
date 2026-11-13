@@ -2,8 +2,17 @@ export type Difficulty = 'easy' | 'normal' | 'hard' | 'sandbox';
 export type DataSource = 'nasa' | 'game' | 'fictional';
 
 export type PartCategory =
-  | 'engine' | 'tank' | 'rcs' | 'leg' | 'hull' | 'power'
-  | 'comms' | 'computer' | 'instrument' | 'heatshield' | 'parachute';
+  | 'engine'
+  | 'tank'
+  | 'rcs'
+  | 'leg'
+  | 'hull'
+  | 'power'
+  | 'comms'
+  | 'computer'
+  | 'instrument'
+  | 'heatshield'
+  | 'parachute';
 
 export interface ParamSpec {
   key: string;
@@ -32,16 +41,26 @@ export interface PartDef {
 }
 
 export interface PartStats {
-  thrustN?: number; ispS?: number; gimbalDeg?: number;
+  thrustN?: number;
+  ispS?: number;
+  gimbalDeg?: number;
   fuelCapacityKg?: number;
   rcsThrustN?: number;
-  legLengthM?: number; footpadM?: number; shockStiffness?: number;
+  legLengthM?: number;
+  footpadM?: number;
+  shockStiffness?: number;
   structureStrength?: number;
-  solarAreaM2?: number; batteryWh?: number;
-  downlinkKbps?: number; antennaGainDb?: number;
+  solarAreaM2?: number;
+  batteryWh?: number;
+  downlinkKbps?: number;
+  antennaGainDb?: number;
   assistLevel?: number;
-  instrumentKind?: InstrumentKind; dataRateKbps?: number; scienceValue?: number;
-  heatCapacityMJ?: number; dragAreaM2?: number; singleUse?: boolean;
+  instrumentKind?: InstrumentKind;
+  dataRateKbps?: number;
+  scienceValue?: number;
+  heatCapacityMJ?: number;
+  dragAreaM2?: number;
+  singleUse?: boolean;
 }
 
 export type InstrumentKind = 'camera' | 'spectrometer' | 'drill' | 'seismometer' | 'weather';
@@ -171,12 +190,15 @@ export interface MissionResult {
   malfunctions: string[];
 }
 
-export type StreakTrack =
-  | 'cleanAscent' | 'smoothHands' | 'pinpoint' | 'softTouch' | 'frugal';
+export type StreakTrack = 'cleanAscent' | 'smoothHands' | 'pinpoint' | 'softTouch' | 'frugal';
 
 export interface ScoreBreakdown {
-  landing: number; science: number; efficiency: number;
-  decisions: number; teamBonus: number; total: number;
+  landing: number;
+  science: number;
+  efficiency: number;
+  decisions: number;
+  teamBonus: number;
+  total: number;
 }
 
 export interface PayoutResult {
@@ -241,5 +263,12 @@ export interface MissionReport {
 }
 
 export type GamePhase =
-  | 'home' | 'contracts' | 'hangar' | 'preflight'
-  | 'flight' | 'scavenge' | 'results' | 'research' | 'team';
+  | 'home'
+  | 'contracts'
+  | 'hangar'
+  | 'preflight'
+  | 'flight'
+  | 'scavenge'
+  | 'results'
+  | 'research'
+  | 'team';

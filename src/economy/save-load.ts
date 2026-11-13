@@ -55,4 +55,3 @@ export function writeSave(save: SaveGame): void {
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   }
 }
-

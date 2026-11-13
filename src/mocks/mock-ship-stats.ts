@@ -25,4 +25,3 @@ export const mockShipStats: ShipStats = {
   valid: true,
   violations: [],
 };
-

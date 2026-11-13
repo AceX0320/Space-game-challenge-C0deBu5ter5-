@@ -25,9 +25,14 @@ export function renderResults(root: HTMLElement, state: GameState): void {
     outcome: 'soft',
     causes: [
       { severity: 'good' as const, text: 'Touchdown velocity was well within leg damping limits.' },
-      { severity: 'good' as const, text: 'Instruments collected and downlinked 20 MB of planetary samples.' },
+      {
+        severity: 'good' as const,
+        text: 'Instruments collected and downlinked 20 MB of planetary samples.',
+      },
     ],
-    suggestions: ['Upgrade to lighter composite tanks to expand payload margins on higher-tier contracts.'],
+    suggestions: [
+      'Upgrade to lighter composite tanks to expand payload margins on higher-tier contracts.',
+    ],
     timeline: [],
     similarRealMission: 'Surveyor 1 (1966) — NASA Lunar Soft Landing Mission',
   };

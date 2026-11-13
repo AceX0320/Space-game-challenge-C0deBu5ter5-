@@ -14,4 +14,3 @@ export const mockMissionResult: MissionResult = {
   },
   malfunctions: [],
 };
-

@@ -23,7 +23,18 @@ const mockParts: PartDef[] = [
     baseCostM: 8,
     basePowerW: 200,
     baseWearPerMission: 8,
-    params: [{ key: 'thrustScale', label: 'Thrust', min: 0.5, max: 2, step: 0.1, default: 1, unit: '×', explain: '' }],
+    params: [
+      {
+        key: 'thrustScale',
+        label: 'Thrust',
+        min: 0.5,
+        max: 2,
+        step: 0.1,
+        default: 1,
+        unit: '×',
+        explain: '',
+      },
+    ],
     stats: { thrustN: 450000, ispS: 282 },
   },
   {
@@ -36,7 +47,18 @@ const mockParts: PartDef[] = [
     baseCostM: 2,
     basePowerW: 0,
     baseWearPerMission: 2,
-    params: [{ key: 'volume', label: 'Volume', min: 0.5, max: 4, step: 0.5, default: 1, unit: '×', explain: '' }],
+    params: [
+      {
+        key: 'volume',
+        label: 'Volume',
+        min: 0.5,
+        max: 4,
+        step: 0.5,
+        default: 1,
+        unit: '×',
+        explain: '',
+      },
+    ],
     stats: { fuelCapacityKg: 2000 },
   },
 ];
@@ -45,8 +67,20 @@ const mockDesign: ShipDesign = {
   id: 'd1',
   name: 'Test Ship',
   parts: [
-    { instanceId: 'e1', partId: 'engine-test', paramValues: { thrustScale: 1 }, condition: 100, maxCondition: 100 },
-    { instanceId: 't1', partId: 'tank-test', paramValues: { volume: 1 }, condition: 100, maxCondition: 100 },
+    {
+      instanceId: 'e1',
+      partId: 'engine-test',
+      paramValues: { thrustScale: 1 },
+      condition: 100,
+      maxCondition: 100,
+    },
+    {
+      instanceId: 't1',
+      partId: 'tank-test',
+      paramValues: { volume: 1 },
+      condition: 100,
+      maxCondition: 100,
+    },
   ],
 };
 
@@ -73,4 +107,3 @@ describe('computeShipStats', () => {
     expect(stats.violations).toEqual([]);
   });
 });
-

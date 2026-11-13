@@ -16,11 +16,7 @@ import { G0_MS2 } from '@/config/constants';
  *
  * STUB: returns plausible values based on part count and body gravity.
  */
-export function computeShipStats(
-  design: ShipDesign,
-  catalog: PartDef[],
-  body: Body
-): ShipStats {
+export function computeShipStats(design: ShipDesign, catalog: PartDef[], body: Body): ShipStats {
   const catalogMap = new Map(catalog.map((p) => [p.id, p]));
 
   let totalMassKg = 0;
@@ -73,24 +69,28 @@ export function computeShipStats(
     if (def.stats.assistLevel) controlSum += def.stats.assistLevel;
     if (def.stats.rcsThrustN) controlSum += 0.5;
 
-    reliabilityProduct *= (inst.condition / 100);
+    reliabilityProduct *= inst.condition / 100;
   }
 
   const dryMassKg = totalMassKg - fuelMassKg;
 
   // Rocket equation: Δv = Isp × g0 × ln(wet/dry)
-  const deltaVms = fuelMassKg > 0 && dryMassKg > 0
-    ? ispS * G0_MS2 * Math.log((dryMassKg + fuelMassKg) / dryMassKg)
-    : 0;
+  const deltaVms =
+    fuelMassKg > 0 && dryMassKg > 0
+      ? ispS * G0_MS2 * Math.log((dryMassKg + fuelMassKg) / dryMassKg)
+      : 0;
 
-  const twr = thrustN > 0 && totalMassKg > 0 && body.gravityMs2 > 0
-    ? thrustN / (totalMassKg * body.gravityMs2)
-    : 0;
+  const twr =
+    thrustN > 0 && totalMassKg > 0 && body.gravityMs2 > 0
+      ? thrustN / (totalMassKg * body.gravityMs2)
+      : 0;
 
   if (twr < 1.1) warnings.push('TWR below 1.1 — may not be able to hover for landing');
   if (deltaVms < 500) warnings.push('Low Δv — may run out of fuel');
-  if (powerDrawW > powerGenW + batteryWh / 24) warnings.push('Power deficit — instruments may shut down');
-  if (dataGenKbps > downlinkKbps) warnings.push('Data generation exceeds downlink — science data may be lost');
+  if (powerDrawW > powerGenW + batteryWh / 24)
+    warnings.push('Power deficit — instruments may shut down');
+  if (dataGenKbps > downlinkKbps)
+    warnings.push('Data generation exceeds downlink — science data may be lost');
 
   const dataBufferMB = 500;
 
@@ -120,4 +120,3 @@ export function computeShipStats(
     violations,
   };
 }
-

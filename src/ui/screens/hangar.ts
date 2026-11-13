@@ -60,9 +60,33 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
   const statsPanel = createPanel('Telemetry & Performance Estimates');
   statsPanel.appendChild(createMeter('Total Mass', stats.totalMassKg, 10000, 'kg', '#38bdf8'));
   statsPanel.appendChild(createMeter('Delta-V (Δv)', stats.deltaVms, 5000, 'm/s', '#22c55e'));
-  statsPanel.appendChild(createMeter('Thrust-to-Weight (TWR)', stats.twr, 3.0, 'x', stats.twr >= 1.1 ? '#22c55e' : '#ef4444'));
-  statsPanel.appendChild(createMeter('Power Balance', stats.powerGenW, Math.max(stats.powerDrawW * 1.5, 500), 'W', '#eab308'));
-  statsPanel.appendChild(createMeter('Estimated Cost', stats.costM, contract.budgetCapM, '$M', stats.costM <= contract.budgetCapM ? '#38bdf8' : '#ef4444'));
+  statsPanel.appendChild(
+    createMeter(
+      'Thrust-to-Weight (TWR)',
+      stats.twr,
+      3.0,
+      'x',
+      stats.twr >= 1.1 ? '#22c55e' : '#ef4444'
+    )
+  );
+  statsPanel.appendChild(
+    createMeter(
+      'Power Balance',
+      stats.powerGenW,
+      Math.max(stats.powerDrawW * 1.5, 500),
+      'W',
+      '#eab308'
+    )
+  );
+  statsPanel.appendChild(
+    createMeter(
+      'Estimated Cost',
+      stats.costM,
+      contract.budgetCapM,
+      '$M',
+      stats.costM <= contract.budgetCapM ? '#38bdf8' : '#ef4444'
+    )
+  );
 
   const detailsDiv = document.createElement('div');
   detailsDiv.style.marginTop = '1rem';
@@ -82,4 +106,3 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
     transitionTo('preflight');
   });
 }
-

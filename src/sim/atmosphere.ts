@@ -15,12 +15,7 @@ export function atmosphericDensity(spec: AtmosphereSpec | null, altitudeM: numbe
  * F_drag = 0.5 * rho * v^2 * Cd * A
  * Cd assumed 1.0 (blunt body approximation, game value).
  */
-export function dragForce(
-  density: number,
-  speedMs: number,
-  dragAreaM2: number,
-  cd = 1.0
-): number {
+export function dragForce(density: number, speedMs: number, dragAreaM2: number, cd = 1.0): number {
   return 0.5 * density * speedMs * speedMs * cd * dragAreaM2;
 }
 

@@ -38,4 +38,3 @@ export function doResearch(node: ResearchNode, save: SaveGame): SaveGame {
     inventory: updatedInventory,
   };
 }
-

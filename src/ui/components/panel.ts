@@ -21,4 +21,3 @@ export function createPanel(title?: string, contentHtml = ''): HTMLElement {
 
   return panel;
 }
-

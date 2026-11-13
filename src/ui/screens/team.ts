@@ -24,10 +24,26 @@ export function renderTeam(root: HTMLElement, state: GameState): void {
   container.appendChild(header);
 
   const roles: { role: TeamRole; title: string; caresAbout: string }[] = [
-    { role: 'director', title: 'Mission Director', caresAbout: 'Strategic budget cap, scientific goals, and Go/No-Go authority' },
-    { role: 'engineer', title: 'Spacecraft Engineer', caresAbout: 'Structural mass, delta-V, thrust-to-weight, and landing gear stability' },
-    { role: 'science', title: 'Science Lead', caresAbout: 'Instrument payload suite, sampling capabilities, and data volume' },
-    { role: 'operations', title: 'Operations Lead', caresAbout: 'Power balance in shadow, downlink throughput, and part wear/reliability' },
+    {
+      role: 'director',
+      title: 'Mission Director',
+      caresAbout: 'Strategic budget cap, scientific goals, and Go/No-Go authority',
+    },
+    {
+      role: 'engineer',
+      title: 'Spacecraft Engineer',
+      caresAbout: 'Structural mass, delta-V, thrust-to-weight, and landing gear stability',
+    },
+    {
+      role: 'science',
+      title: 'Science Lead',
+      caresAbout: 'Instrument payload suite, sampling capabilities, and data volume',
+    },
+    {
+      role: 'operations',
+      title: 'Operations Lead',
+      caresAbout: 'Power balance in shadow, downlink throughput, and part wear/reliability',
+    },
   ];
 
   const rolesGrid = document.createElement('div');

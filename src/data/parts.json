@@ -10,10 +10,46 @@
     "basePowerW": 200,
     "baseWearPerMission": 8,
     "params": [
-      { "key": "count", "label": "Engine Count", "min": 1, "max": 4, "step": 1, "default": 1, "unit": "", "explain": "More engines = more thrust and redundancy, but heavier and more expensive. Wear multiplied by count." },
-      { "key": "thrustScale", "label": "Thrust Scale", "min": 0.5, "max": 2.0, "step": 0.1, "default": 1.0, "unit": "×", "explain": "Scales thrust and fuel flow. Higher thrust improves TWR but burns fuel faster." },
-      { "key": "ispScale", "label": "Efficiency (Isp)", "min": 0.7, "max": 1.3, "step": 0.05, "default": 1.0, "unit": "×", "explain": "Higher efficiency = more Δv from same fuel. But high-efficiency engines usually have lower thrust." },
-      { "key": "gimbalDeg", "label": "Gimbal Range", "min": 0, "max": 15, "step": 1, "default": 5, "unit": "°", "explain": "Wider gimbal gives better steering during powered flight. Adds complexity and slight wear." }
+      {
+        "key": "count",
+        "label": "Engine Count",
+        "min": 1,
+        "max": 4,
+        "step": 1,
+        "default": 1,
+        "unit": "",
+        "explain": "More engines = more thrust and redundancy, but heavier and more expensive. Wear multiplied by count."
+      },
+      {
+        "key": "thrustScale",
+        "label": "Thrust Scale",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.1,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Scales thrust and fuel flow. Higher thrust improves TWR but burns fuel faster."
+      },
+      {
+        "key": "ispScale",
+        "label": "Efficiency (Isp)",
+        "min": 0.7,
+        "max": 1.3,
+        "step": 0.05,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Higher efficiency = more Δv from same fuel. But high-efficiency engines usually have lower thrust."
+      },
+      {
+        "key": "gimbalDeg",
+        "label": "Gimbal Range",
+        "min": 0,
+        "max": 15,
+        "step": 1,
+        "default": 5,
+        "unit": "°",
+        "explain": "Wider gimbal gives better steering during powered flight. Adds complexity and slight wear."
+      }
     ],
     "stats": { "thrustN": 450000, "ispS": 282, "gimbalDeg": 5 }
   },
@@ -28,10 +64,46 @@
     "basePowerW": 80,
     "baseWearPerMission": 5,
     "params": [
-      { "key": "count", "label": "Engine Count", "min": 1, "max": 8, "step": 1, "default": 4, "unit": "", "explain": "More Draco engines increase thrust and redundancy at low individual weight." },
-      { "key": "thrustScale", "label": "Thrust Scale", "min": 0.5, "max": 1.5, "step": 0.1, "default": 1.0, "unit": "×", "explain": "Scales thrust output. Draco engines are low-thrust by design — best for precision, not hovering on heavy planets." },
-      { "key": "ispScale", "label": "Efficiency (Isp)", "min": 0.8, "max": 1.2, "step": 0.05, "default": 1.0, "unit": "×", "explain": "High base efficiency makes these engines fuel-efficient. Slight scaling room." },
-      { "key": "gimbalDeg", "label": "Gimbal Range", "min": 0, "max": 8, "step": 1, "default": 3, "unit": "°", "explain": "Limited gimbal; RCS handles most attitude control for this engine class." }
+      {
+        "key": "count",
+        "label": "Engine Count",
+        "min": 1,
+        "max": 8,
+        "step": 1,
+        "default": 4,
+        "unit": "",
+        "explain": "More Draco engines increase thrust and redundancy at low individual weight."
+      },
+      {
+        "key": "thrustScale",
+        "label": "Thrust Scale",
+        "min": 0.5,
+        "max": 1.5,
+        "step": 0.1,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Scales thrust output. Draco engines are low-thrust by design — best for precision, not hovering on heavy planets."
+      },
+      {
+        "key": "ispScale",
+        "label": "Efficiency (Isp)",
+        "min": 0.8,
+        "max": 1.2,
+        "step": 0.05,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "High base efficiency makes these engines fuel-efficient. Slight scaling room."
+      },
+      {
+        "key": "gimbalDeg",
+        "label": "Gimbal Range",
+        "min": 0,
+        "max": 8,
+        "step": 1,
+        "default": 3,
+        "unit": "°",
+        "explain": "Limited gimbal; RCS handles most attitude control for this engine class."
+      }
     ],
     "stats": { "thrustN": 60000, "ispS": 310, "gimbalDeg": 3 }
   },
@@ -46,8 +118,26 @@
     "basePowerW": 0,
     "baseWearPerMission": 2,
     "params": [
-      { "key": "volume", "label": "Tank Volume", "min": 0.5, "max": 4.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger volume = more fuel = more Δv, but heavier dry mass and higher cost. The rocket equation makes this non-linear." },
-      { "key": "pressurised", "label": "Pressurised", "min": 0, "max": 1, "step": 1, "default": 0, "unit": "", "explain": "Pressurised tanks feed engines more reliably at high altitude. Adds mass and cost." }
+      {
+        "key": "volume",
+        "label": "Tank Volume",
+        "min": 0.5,
+        "max": 4.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Larger volume = more fuel = more Δv, but heavier dry mass and higher cost. The rocket equation makes this non-linear."
+      },
+      {
+        "key": "pressurised",
+        "label": "Pressurised",
+        "min": 0,
+        "max": 1,
+        "step": 1,
+        "default": 0,
+        "unit": "",
+        "explain": "Pressurised tanks feed engines more reliably at high altitude. Adds mass and cost."
+      }
     ],
     "stats": { "fuelCapacityKg": 2000 }
   },
@@ -62,7 +152,16 @@
     "basePowerW": 0,
     "baseWearPerMission": 4,
     "params": [
-      { "key": "volume", "label": "Tank Volume", "min": 0.5, "max": 3.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Same fuel at lower structural mass. Great for Δv-limited missions." }
+      {
+        "key": "volume",
+        "label": "Tank Volume",
+        "min": 0.5,
+        "max": 3.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Same fuel at lower structural mass. Great for Δv-limited missions."
+      }
     ],
     "stats": { "fuelCapacityKg": 1500 }
   },
@@ -77,8 +176,26 @@
     "basePowerW": 20,
     "baseWearPerMission": 3,
     "params": [
-      { "key": "count", "label": "Thruster Count", "min": 2, "max": 8, "step": 2, "default": 4, "unit": "", "explain": "More RCS thrusters = better attitude control and corrections, but adds mass and fuel use." },
-      { "key": "strength", "label": "Thruster Strength", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Stronger RCS snaps to orientation faster. Important on windy or rotating descent." }
+      {
+        "key": "count",
+        "label": "Thruster Count",
+        "min": 2,
+        "max": 8,
+        "step": 2,
+        "default": 4,
+        "unit": "",
+        "explain": "More RCS thrusters = better attitude control and corrections, but adds mass and fuel use."
+      },
+      {
+        "key": "strength",
+        "label": "Thruster Strength",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.25,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Stronger RCS snaps to orientation faster. Important on windy or rotating descent."
+      }
     ],
     "stats": { "rcsThrustN": 2000 }
   },
@@ -93,10 +210,46 @@
     "basePowerW": 0,
     "baseWearPerMission": 6,
     "params": [
-      { "key": "count", "label": "Leg Count", "min": 3, "max": 4, "step": 1, "default": 4, "unit": "", "explain": "4 legs are more stable than 3. 3 legs save mass. Both meet the minimum." },
-      { "key": "length", "label": "Leg Length", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Longer legs allow landing on rougher terrain and tolerate more tilt. Heavier." },
-      { "key": "footpadWidth", "label": "Footpad Width", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Wider footpads spread load over soft regolith. Wider = less sinking risk." },
-      { "key": "shockAbsorption", "label": "Shock Absorber", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Stiffer absorbers tolerate harder touchdowns but transmit more force to the hull on rough landings." }
+      {
+        "key": "count",
+        "label": "Leg Count",
+        "min": 3,
+        "max": 4,
+        "step": 1,
+        "default": 4,
+        "unit": "",
+        "explain": "4 legs are more stable than 3. 3 legs save mass. Both meet the minimum."
+      },
+      {
+        "key": "length",
+        "label": "Leg Length",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.25,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Longer legs allow landing on rougher terrain and tolerate more tilt. Heavier."
+      },
+      {
+        "key": "footpadWidth",
+        "label": "Footpad Width",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.25,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Wider footpads spread load over soft regolith. Wider = less sinking risk."
+      },
+      {
+        "key": "shockAbsorption",
+        "label": "Shock Absorber",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.25,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Stiffer absorbers tolerate harder touchdowns but transmit more force to the hull on rough landings."
+      }
     ],
     "stats": { "legLengthM": 1.5, "footpadM": 0.4, "shockStiffness": 1.0 }
   },
@@ -111,9 +264,36 @@
     "basePowerW": 0,
     "baseWearPerMission": 5,
     "params": [
-      { "key": "count", "label": "Leg Count", "min": 3, "max": 4, "step": 1, "default": 4, "unit": "", "explain": "More legs for more stability on soft or uneven ground." },
-      { "key": "length", "label": "Leg Length", "min": 1.0, "max": 3.0, "step": 0.5, "default": 2.0, "unit": "×", "explain": "Wide-stance legs are already long; extending further improves slope tolerance." },
-      { "key": "shockAbsorption", "label": "Shock Absorber", "min": 1.0, "max": 3.0, "step": 0.5, "default": 1.5, "unit": "×", "explain": "High shock absorption lets you land harder without damaging the hull or instruments." }
+      {
+        "key": "count",
+        "label": "Leg Count",
+        "min": 3,
+        "max": 4,
+        "step": 1,
+        "default": 4,
+        "unit": "",
+        "explain": "More legs for more stability on soft or uneven ground."
+      },
+      {
+        "key": "length",
+        "label": "Leg Length",
+        "min": 1.0,
+        "max": 3.0,
+        "step": 0.5,
+        "default": 2.0,
+        "unit": "×",
+        "explain": "Wide-stance legs are already long; extending further improves slope tolerance."
+      },
+      {
+        "key": "shockAbsorption",
+        "label": "Shock Absorber",
+        "min": 1.0,
+        "max": 3.0,
+        "step": 0.5,
+        "default": 1.5,
+        "unit": "×",
+        "explain": "High shock absorption lets you land harder without damaging the hull or instruments."
+      }
     ],
     "stats": { "legLengthM": 2.5, "footpadM": 0.8, "shockStiffness": 1.5 }
   },
@@ -128,8 +308,26 @@
     "basePowerW": 0,
     "baseWearPerMission": 1,
     "params": [
-      { "key": "size", "label": "Bus Size", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger bus provides more mounting points and structural strength, but adds mass." },
-      { "key": "material", "label": "Material Grade", "min": 1, "max": 3, "step": 1, "default": 1, "unit": "", "explain": "Higher grade = stronger, lighter, pricier alloy. Grade 3 is aerospace titanium." }
+      {
+        "key": "size",
+        "label": "Bus Size",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Larger bus provides more mounting points and structural strength, but adds mass."
+      },
+      {
+        "key": "material",
+        "label": "Material Grade",
+        "min": 1,
+        "max": 3,
+        "step": 1,
+        "default": 1,
+        "unit": "",
+        "explain": "Higher grade = stronger, lighter, pricier alloy. Grade 3 is aerospace titanium."
+      }
     ],
     "stats": { "structureStrength": 1.0 }
   },
@@ -144,8 +342,26 @@
     "basePowerW": -400,
     "baseWearPerMission": 3,
     "params": [
-      { "key": "area", "label": "Panel Area", "min": 0.5, "max": 4.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "More area = more power generated. Power scales with area and solar flux of the target body." },
-      { "key": "efficiency", "label": "Cell Efficiency", "min": 0.8, "max": 1.5, "step": 0.1, "default": 1.0, "unit": "×", "explain": "Higher-efficiency cells cost more but generate more power per unit area." }
+      {
+        "key": "area",
+        "label": "Panel Area",
+        "min": 0.5,
+        "max": 4.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "More area = more power generated. Power scales with area and solar flux of the target body."
+      },
+      {
+        "key": "efficiency",
+        "label": "Cell Efficiency",
+        "min": 0.8,
+        "max": 1.5,
+        "step": 0.1,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Higher-efficiency cells cost more but generate more power per unit area."
+      }
     ],
     "stats": { "solarAreaM2": 10 }
   },
@@ -160,8 +376,26 @@
     "basePowerW": 0,
     "baseWearPerMission": 4,
     "params": [
-      { "key": "capacity", "label": "Battery Capacity", "min": 0.5, "max": 4.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "More capacity = longer survival in shadow. Heavy. Needed on Titan (low solar flux) or for long nights." },
-      { "key": "cells", "label": "Cell Banks", "min": 1, "max": 3, "step": 1, "default": 1, "unit": "", "explain": "Multiple banks provide redundancy — one failure leaves others intact." }
+      {
+        "key": "capacity",
+        "label": "Battery Capacity",
+        "min": 0.5,
+        "max": 4.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "More capacity = longer survival in shadow. Heavy. Needed on Titan (low solar flux) or for long nights."
+      },
+      {
+        "key": "cells",
+        "label": "Cell Banks",
+        "min": 1,
+        "max": 3,
+        "step": 1,
+        "default": 1,
+        "unit": "",
+        "explain": "Multiple banks provide redundancy — one failure leaves others intact."
+      }
     ],
     "stats": { "batteryWh": 500 }
   },
@@ -176,7 +410,16 @@
     "basePowerW": 20,
     "baseWearPerMission": 1,
     "params": [
-      { "key": "size", "label": "Antenna Size", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger antenna = more signal gain = higher data rate. Mass and cost scale with size." }
+      {
+        "key": "size",
+        "label": "Antenna Size",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Larger antenna = more signal gain = higher data rate. Mass and cost scale with size."
+      }
     ],
     "stats": { "downlinkKbps": 10, "antennaGainDb": 6 }
   },
@@ -191,8 +434,26 @@
     "basePowerW": 80,
     "baseWearPerMission": 3,
     "params": [
-      { "key": "size", "label": "Dish Size", "min": 0.5, "max": 3.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger dish = higher data rate. Critical for missions with high science data volume." },
-      { "key": "tracking", "label": "Tracking Speed", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Faster tracking keeps the dish pointed at Earth through the mission. Faster = more power." }
+      {
+        "key": "size",
+        "label": "Dish Size",
+        "min": 0.5,
+        "max": 3.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Larger dish = higher data rate. Critical for missions with high science data volume."
+      },
+      {
+        "key": "tracking",
+        "label": "Tracking Speed",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Faster tracking keeps the dish pointed at Earth through the mission. Faster = more power."
+      }
     ],
     "stats": { "downlinkKbps": 200, "antennaGainDb": 30 }
   },
@@ -207,7 +468,16 @@
     "basePowerW": 50,
     "baseWearPerMission": 1,
     "params": [
-      { "key": "tier", "label": "Computer Tier", "min": 1, "max": 3, "step": 1, "default": 1, "unit": "", "explain": "Tier 1 = basic stabilisation. Tier 2 = autonomous correction. Tier 3 = full autopilot assist. Higher tier = more power and cost." }
+      {
+        "key": "tier",
+        "label": "Computer Tier",
+        "min": 1,
+        "max": 3,
+        "step": 1,
+        "default": 1,
+        "unit": "",
+        "explain": "Tier 1 = basic stabilisation. Tier 2 = autonomous correction. Tier 3 = full autopilot assist. Higher tier = more power and cost."
+      }
     ],
     "stats": { "assistLevel": 1 }
   },
@@ -222,7 +492,16 @@
     "basePowerW": 30,
     "baseWearPerMission": 1,
     "params": [
-      { "key": "resolution", "label": "Resolution", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Higher resolution = better science images but more data per photo. Balance with antenna capacity." }
+      {
+        "key": "resolution",
+        "label": "Resolution",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Higher resolution = better science images but more data per photo. Balance with antenna capacity."
+      }
     ],
     "stats": { "instrumentKind": "camera", "dataRateKbps": 50, "scienceValue": 20 }
   },
@@ -237,7 +516,16 @@
     "basePowerW": 60,
     "baseWearPerMission": 3,
     "params": [
-      { "key": "sensitivity", "label": "Sensitivity", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Higher sensitivity detects trace compounds. Required to identify perchlorate salts or organic molecules." }
+      {
+        "key": "sensitivity",
+        "label": "Sensitivity",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Higher sensitivity detects trace compounds. Required to identify perchlorate salts or organic molecules."
+      }
     ],
     "stats": { "instrumentKind": "spectrometer", "dataRateKbps": 20, "scienceValue": 40 }
   },
@@ -252,7 +540,16 @@
     "basePowerW": 150,
     "baseWearPerMission": 8,
     "params": [
-      { "key": "depth", "label": "Max Drill Depth", "min": 0.5, "max": 3.0, "step": 0.5, "default": 1.0, "unit": "m", "explain": "Deeper drill reaches richer subsurface samples. Heavier mechanism, more power, faster wear." }
+      {
+        "key": "depth",
+        "label": "Max Drill Depth",
+        "min": 0.5,
+        "max": 3.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "m",
+        "explain": "Deeper drill reaches richer subsurface samples. Heavier mechanism, more power, faster wear."
+      }
     ],
     "stats": { "instrumentKind": "drill", "dataRateKbps": 5, "scienceValue": 60 }
   },
@@ -267,7 +564,16 @@
     "basePowerW": 10,
     "baseWearPerMission": 2,
     "params": [
-      { "key": "bandwidth", "label": "Frequency Range", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Wider frequency range captures more types of seismic events. More data, more science value." }
+      {
+        "key": "bandwidth",
+        "label": "Frequency Range",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Wider frequency range captures more types of seismic events. More data, more science value."
+      }
     ],
     "stats": { "instrumentKind": "seismometer", "dataRateKbps": 2, "scienceValue": 50 }
   },
@@ -282,8 +588,26 @@
     "basePowerW": 0,
     "baseWearPerMission": 100,
     "params": [
-      { "key": "size", "label": "Shield Size", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger shield handles hotter entries (Venus, fast Mars entry). Heavier." },
-      { "key": "thickness", "label": "Ablator Thickness", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Thicker ablator survives more heating. Required for Venus. Adds mass." }
+      {
+        "key": "size",
+        "label": "Shield Size",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Larger shield handles hotter entries (Venus, fast Mars entry). Heavier."
+      },
+      {
+        "key": "thickness",
+        "label": "Ablator Thickness",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Thicker ablator survives more heating. Required for Venus. Adds mass."
+      }
     ],
     "stats": { "heatCapacityMJ": 500, "dragAreaM2": 20, "singleUse": true }
   },
@@ -298,7 +622,16 @@
     "basePowerW": 0,
     "baseWearPerMission": 100,
     "params": [
-      { "key": "size", "label": "Parachute Diameter", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger parachute creates more drag, slows descent more. Very effective on Titan's thick atmosphere. Single-use." }
+      {
+        "key": "size",
+        "label": "Parachute Diameter",
+        "min": 0.5,
+        "max": 2.0,
+        "step": 0.5,
+        "default": 1.0,
+        "unit": "×",
+        "explain": "Larger parachute creates more drag, slows descent more. Very effective on Titan's thick atmosphere. Single-use."
+      }
     ],
     "stats": { "dragAreaM2": 50, "singleUse": true }
   }

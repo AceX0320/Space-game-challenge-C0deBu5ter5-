@@ -43,8 +43,7 @@ export function runMockMission(): void {
   const state = store.getState();
 
   const contracts = getContracts();
-  const contract =
-    contracts.find((c) => c.id === state.activeContractId) ?? contracts[0]!;
+  const contract = contracts.find((c) => c.id === state.activeContractId) ?? contracts[0]!;
 
   const bodies = getBodies();
   const body = bodies.find((b) => b.id === contract.bodyId) ?? bodies[0]!;
@@ -64,15 +63,7 @@ export function runMockMission(): void {
   const scavengeResult =
     flightResult.outcome === 'crash'
       ? null
-      : simulateScavenge(
-          stats,
-          body,
-          contract,
-          flightResult,
-          items,
-          state.save.difficulty,
-          42
-        );
+      : simulateScavenge(stats, body, contract, flightResult, items, state.save.difficulty, 42);
 
   // 4. Wear & tear calculation
   const updatedParts = applyWear(design.parts, state.save.difficulty, {});
@@ -160,4 +151,3 @@ export function runMockMission(): void {
     phase: 'results',
   });
 }
-

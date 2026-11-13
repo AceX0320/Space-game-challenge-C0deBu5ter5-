@@ -1,4 +1,11 @@
-import type { Contract, MissionReport, MissionResult, PayoutResult, ReportItem, ShipStats } from '@/types';
+import type {
+  Contract,
+  MissionReport,
+  MissionResult,
+  PayoutResult,
+  ReportItem,
+  ShipStats,
+} from '@/types';
 
 /**
  * Generate a comprehensive post-mission report explaining why the mission succeeded or failed.
@@ -30,7 +37,9 @@ export function generateReport(
         severity: 'warning',
         text: `Touchdown speed or tilt pushed landing gear near its mechanical threshold.`,
       });
-      suggestions.push('Consider upgrading to wide-stance landing legs or reducing descent rate with higher thrust.');
+      suggestions.push(
+        'Consider upgrading to wide-stance landing legs or reducing descent rate with higher thrust.'
+      );
       break;
     case 'crash':
       headline = `Mission Failure: Spacecraft destroyed on impact`;
@@ -38,7 +47,9 @@ export function generateReport(
         severity: 'critical',
         text: `Vertical speed ${Math.abs(flight.touchdownVyMs).toFixed(1)} m/s exceeded leg structural limit of ${stats.touchdownLimits.maxVyMs} m/s. Thrust-to-weight (${stats.twr.toFixed(2)}) was insufficient to decelerate.`,
       });
-      suggestions.push('Increase engine count, add more propellant, or widen throttle margin for terminal descent.');
+      suggestions.push(
+        'Increase engine count, add more propellant, or widen throttle margin for terminal descent.'
+      );
       break;
     case 'abort':
       headline = `Mission Aborted: Critical failure during transit or descent`;
@@ -82,7 +93,9 @@ export function generateReport(
       severity: 'warning',
       text: `Mission operated at a net loss of $${Math.abs(payout.netM).toFixed(1)}M due to heavy build/launch costs.`,
     });
-    suggestions.push('Trim excess fuel or downscale non-essential components to meet budget margins.');
+    suggestions.push(
+      'Trim excess fuel or downscale non-essential components to meet budget margins.'
+    );
   }
 
   // Real NASA mission comparisons
@@ -90,7 +103,8 @@ export function generateReport(
     moon: 'Surveyor 1 (1966) — NASA’s first soft landing on the Moon, verifying surface bearing strength.',
     mars: 'Viking 1 (1976) — NASA’s historic first successful soft landing and science operations on Mars.',
     titan: 'Huygens Probe (ESA/NASA Cassini, 2005) — First touchdown in the outer Solar System.',
-    venus: 'Pioneer Venus Multiprobe (1978) — Atmospheric probes surviving extreme pressure and heat.',
+    venus:
+      'Pioneer Venus Multiprobe (1978) — Atmospheric probes surviving extreme pressure and heat.',
     asteroid: 'OSIRIS-REx (2020) — Precision touch-and-go sampling on asteroid Bennu.',
   };
 
@@ -107,4 +121,3 @@ export function generateReport(
     similarRealMission,
   };
 }
-

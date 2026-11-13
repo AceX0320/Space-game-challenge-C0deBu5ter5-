@@ -34,7 +34,6 @@ export interface FlightSim {
 // Suppress unused import warning — G0_MS2 and _seed reserved for future phases
 void G0_MS2;
 
-
 /**
  * Create a flight simulation instance.
  * Simple 2D side-view physics: gravity, thrust, drag, tilt.
@@ -81,7 +80,7 @@ export function createFlightSim(
       const speedMs = Math.sqrt(state.vxMs ** 2 + state.vyMs ** 2);
       const drag = dragForce(density, speedMs, dragAreaM2);
       const thrustN = controls.throttle * stats.thrustN;
-      const fuelFlow = thrustN / (stats.thrustN > 0 ? stats.thrustN / stats.fuelMassKg * 60 : 1);
+      const fuelFlow = thrustN / (stats.thrustN > 0 ? (stats.thrustN / stats.fuelMassKg) * 60 : 1);
 
       // Simple descent: approach ground
       const gravityMs2 = body.gravityMs2;
@@ -93,7 +92,10 @@ export function createFlightSim(
       if (state.yM <= 0 && state.phase !== 'landed' && state.phase !== 'crashed') {
         state.yM = 0;
         const outcome = classifyTouchdown(
-          state.vyMs, state.vxMs, state.tiltDeg, stats.touchdownLimits
+          state.vyMs,
+          state.vxMs,
+          state.tiltDeg,
+          stats.touchdownLimits
         );
         state.phase = outcome === 'crash' ? 'crashed' : 'landed';
       }
@@ -106,8 +108,10 @@ export function createFlightSim(
     result(): FlightResult {
       const distM = Math.abs(state.xM);
       const ring = ringForDistance(distM, difficulty);
-      const outcome = state.phase === 'crashed' ? 'crash'
-        : classifyTouchdown(state.vyMs, state.vxMs, state.tiltDeg, stats.touchdownLimits);
+      const outcome =
+        state.phase === 'crashed'
+          ? 'crash'
+          : classifyTouchdown(state.vyMs, state.vxMs, state.tiltDeg, stats.touchdownLimits);
       return {
         outcome,
         landingRing: ring,

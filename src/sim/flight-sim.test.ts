@@ -57,7 +57,9 @@ describe('dragForce', () => {
 describe('rollMalfunctions', () => {
   it('returns [] when not hard difficulty', () => {
     const design = { id: 'd1', name: 'D1', parts: [] };
-    expect(rollMalfunctions(design as Parameters<typeof rollMalfunctions>[0], 'normal' as Difficulty, 42)).toEqual([]);
+    expect(
+      rollMalfunctions(design as Parameters<typeof rollMalfunctions>[0], 'normal' as Difficulty, 42)
+    ).toEqual([]);
   });
 });
 

@@ -24,7 +24,11 @@
     "fundingGateM": 120,
     "unlocksContractId": "listen-to-the-moon",
     "bonusObjectives": [
-      { "id": "subsurface", "text": "Deploy a drill and find a subsurface sample", "extraRewardM": 20 }
+      {
+        "id": "subsurface",
+        "text": "Deploy a drill and find a subsurface sample",
+        "extraRewardM": 20
+      }
     ]
   },
   {
@@ -66,7 +70,11 @@
     "fundingGateM": 400,
     "unlocksContractId": "tiny-world",
     "bonusObjectives": [
-      { "id": "atm-sample", "text": "Transmit atmospheric composition data during descent", "extraRewardM": 40 }
+      {
+        "id": "atm-sample",
+        "text": "Transmit atmospheric composition data during descent",
+        "extraRewardM": 40
+      }
     ]
   },
   {

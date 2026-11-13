@@ -1,4 +1,12 @@
-import type { Body, Contract, Difficulty, FlightResult, ItemDef, ScavengeResult, ShipStats } from '@/types';
+import type {
+  Body,
+  Contract,
+  Difficulty,
+  FlightResult,
+  ItemDef,
+  ScavengeResult,
+  ShipStats,
+} from '@/types';
 import { createRng } from '@/core/rng';
 import { clamp } from '@/core/units';
 
@@ -32,7 +40,9 @@ export function simulateScavenge(
       timeUsedS: 0,
       timeAvailableS: 0,
       endedBy: 'part-failure',
-      events: [{ tS: 0, kind: 'failure', text: 'Ship was destroyed on impact — no scavenging possible.' }],
+      events: [
+        { tS: 0, kind: 'failure', text: 'Ship was destroyed on impact — no scavenging possible.' },
+      ],
     };
   }
 
@@ -77,4 +87,3 @@ export function simulateScavenge(
     events: [],
   };
 }
-

@@ -66,4 +66,3 @@ export function renderContracts(root: HTMLElement, state: GameState): void {
     });
   });
 }
-

@@ -1,5 +1,11 @@
 import type { Body, Contract, ItemDef, PartDef, ResearchNode } from '@/types';
-import { validateBody, validateContract, validateItemDef, validatePartDef, validateResearchNode } from '@/core/validate';
+import {
+  validateBody,
+  validateContract,
+  validateItemDef,
+  validatePartDef,
+  validateResearchNode,
+} from '@/core/validate';
 
 import bodiesRaw from './bodies.json';
 import contractsRaw from './contracts.json';

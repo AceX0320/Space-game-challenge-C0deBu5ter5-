@@ -20,11 +20,12 @@ export function computePayout(
 
   // Landing multiplier: based on ring score (0–100 -> 0.0–1.0)
   const ringScore = RING_SCORES[flight.landingRing] ?? 0;
-  const landingMult = flight.outcome === 'crash'
-    ? 0
-    : flight.outcome === 'rough'
-      ? 0.5 + ringScore / 200
-      : 0.5 + ringScore / 200;
+  const landingMult =
+    flight.outcome === 'crash'
+      ? 0
+      : flight.outcome === 'rough'
+        ? 0.5 + ringScore / 200
+        : 0.5 + ringScore / 200;
 
   // Science multiplier: based on data transmitted vs generated
   const scienceMult = scavenge
@@ -58,7 +59,8 @@ export function computePayout(
   const landing = ringScore;
   const science = Math.round(scienceMult * 100);
   const efficiency = Math.round(Math.min(100, Math.max(0, (netM / contract.rewardM) * 100)));
-  const decisions = stats.warnings.length === 0 ? 100 : Math.max(0, 100 - stats.warnings.length * 15);
+  const decisions =
+    stats.warnings.length === 0 ? 100 : Math.max(0, 100 - stats.warnings.length * 15);
   const teamBonus = 0; // TODO(owner-3): add team bonus when teamMode is on
   const total = Math.round((landing + science + efficiency + decisions + teamBonus) / 4);
 
@@ -73,4 +75,3 @@ export function computePayout(
     score: { landing, science, efficiency, decisions, teamBonus, total },
   };
 }
-

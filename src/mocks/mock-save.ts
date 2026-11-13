@@ -29,4 +29,3 @@ export const mockSave: SaveGame = {
   ownedParts: mockDesign.parts,
   currentDesign: mockDesign,
 };
-
