@@ -2,7 +2,6 @@ import type { GameState } from '@/state/store';
 import { getStore } from '@/state/store';
 import { transitionTo } from '@/state/flow';
 import { getBodies, getContracts, getItems, getParts } from '@/data/index';
-import { createPanel } from '@/ui/components/panel';
 import { computeShipStats } from '@/builder/compute-ship-stats';
 import { createFlightSim, autoFly, ringForDistance } from '@/sim/flight-sim';
 import { KeyboardInput } from '@/sim/input';
@@ -13,10 +12,10 @@ import { updateStreaks } from '@/economy/streaks';
 import { applyWear } from '@/economy/wear';
 import { writeSave } from '@/economy/save-load';
 import { generateReport } from '@/report/generate-report';
+import { renderShell, mkPrimary, mkSecondary } from '@/ui/components/shell';
 import type { FlightResult, MissionResult } from '@/types';
 
 export function renderFlight(root: HTMLElement, state: GameState): void {
-  root.innerHTML = '';
   const contracts = getContracts();
   const contract = contracts.find((c) => c.id === state.activeContractId) ?? contracts[0]!;
   const bodies = getBodies();
@@ -24,63 +23,78 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
   const parts = getParts();
   const stats = computeShipStats(state.design, parts, body);
 
-  const container = document.createElement('div');
-  container.className = 'screen-container';
+  let isCompleted = false;
+  let animFrameId: number | null = null;
 
-  const header = document.createElement('div');
-  header.className = 'screen-header';
-  header.innerHTML = `
-    <div>
-      <h1>Flight Operations: Descent & Landing</h1>
-      <p style="color:var(--text-dim)">Target Body: <strong>${body.name}</strong> | Gravity: ${body.gravityMs2.toFixed(2)} m/s² | Target: Bullseye</p>
-    </div>
-    <div style="display:flex; gap:0.75rem">
-      <button class="primary" id="btn-autoland">⚡ AI Auto-Land</button>
-      <button id="btn-abort-flight" style="border-color:var(--danger); color:var(--danger)">Abort</button>
-    </div>
-  `;
-  container.appendChild(header);
+  // Primary CTA (initially disabled/hidden until touchdown)
+  const ctaBtn = mkPrimary('Awaiting Touchdown…', () => {});
+  ctaBtn.disabled = true;
+
+  const autoLandBtn = mkSecondary('⚡ AI Auto-Land', () => {
+    if (isCompleted) return;
+    const flightResult = autoFly(sim);
+    completeMission(flightResult);
+  });
+
+  const abortBtn = mkSecondary('Abort Mission', () => {
+    if (isCompleted) return;
+    sim.state.phase = 'crashed';
+    completeMission(sim.result());
+  });
+  abortBtn.style.borderColor = 'var(--ls-red)';
+  abortBtn.style.color = 'var(--ls-red)';
+
+  const bodyEl = renderShell(root, state, {
+    leftActions: [abortBtn, autoLandBtn],
+    rightCta: ctaBtn,
+    craftName: `${state.design.name} · IN FLIGHT`,
+    craftStatus: 'nominal',
+  });
+  bodyEl.style.display = 'flex';
+  bodyEl.style.flexDirection = 'column';
+  bodyEl.style.padding = 'var(--ls-sp-3)';
+  bodyEl.style.gap = 'var(--ls-sp-2)';
 
   // Flight Canvas Container
-  const canvasPanel = createPanel('Real-time Flight Telemetry & Radar');
-  const canvas = document.createElement('canvas');
-  canvas.width = 960;
-  canvas.height = 440;
-  canvas.style.width = '100%';
-  canvas.style.height = '440px';
-  canvas.style.background = '#030712';
-  canvas.style.borderRadius = '4px';
-  canvas.style.display = 'block';
-  canvasPanel.appendChild(canvas);
-  container.appendChild(canvasPanel);
+  const canvasPanel = document.createElement('div');
+  canvasPanel.className = 'ls-panel';
+  canvasPanel.style.cssText = 'flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; min-height:480px;';
 
-  // Flight Controls Information Panel
-  const infoPanel = createPanel(
-    'Flight Controls & Dynamics',
-    `
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem">
-      <div>
-        <p style="margin:0 0 0.25rem 0">
-          Manual Controls: <strong>Space / W / ArrowUp</strong> = Main Throttle, <strong>A / ArrowLeft</strong> = Pitch Left, <strong>D / ArrowRight</strong> = Pitch Right.
-        </p>
-        <p style="margin:0; font-size:0.85rem; color:var(--text-dim)">
-          Touchdown Limits: Max V-Speed ${stats.touchdownLimits.maxVyMs} m/s, Max H-Speed ${stats.touchdownLimits.maxVxMs} m/s, Max Tilt ${stats.touchdownLimits.maxTiltDeg}°.
-        </p>
-      </div>
-      <div id="touchdown-actions" style="display:none; gap:1rem"></div>
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = 560;
+  canvas.style.cssText = 'width:100%; height:100%; background:#040711; display:block;';
+  canvasPanel.appendChild(canvas);
+  bodyEl.appendChild(canvasPanel);
+
+  // Controls Guide Bar
+  const controlsGuide = document.createElement('div');
+  controlsGuide.style.cssText = `
+    display:flex; justify-content:space-between; align-items:center;
+    padding:var(--ls-sp-2) var(--ls-sp-3); border:1px solid var(--ls-border);
+    border-radius:var(--ls-radius-sm); background:var(--ls-panel);
+    font-size:var(--ls-size-xs); font-family:var(--ls-font-mono); color:var(--ls-text-dim);
+  `;
+  controlsGuide.innerHTML = `
+    <div>
+      <span class="ls-micro">Controls:</span>
+      <span style="color:var(--ls-text)">SPACE / W / ↑</span> Throttle &nbsp;|&nbsp;
+      <span style="color:var(--ls-text)">A / ←</span> Pitch Left &nbsp;|&nbsp;
+      <span style="color:var(--ls-text)">D / →</span> Pitch Right
     </div>
-    `
-  );
-  container.appendChild(infoPanel);
-  root.appendChild(container);
+    <div>
+      <span class="ls-micro">Limits:</span>
+      Vy ≤ ${stats.touchdownLimits.maxVyMs} m/s &nbsp;|&nbsp;
+      Vx ≤ ${stats.touchdownLimits.maxVxMs} m/s &nbsp;|&nbsp;
+      Tilt ≤ ${stats.touchdownLimits.maxTiltDeg}°
+    </div>
+  `;
+  bodyEl.appendChild(controlsGuide);
 
   // Instantiate simulation & inputs
   const sim = createFlightSim(stats, body, state.save.difficulty, Date.now());
   const input = new KeyboardInput(window);
   input.attach();
-
-  let animFrameId: number | null = null;
-  let isCompleted = false;
 
   const ctx = canvas.getContext('2d');
 
@@ -88,7 +102,9 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
     if (isCompleted) return;
     isCompleted = true;
     input.detach();
-    if (animFrameId) cancelAnimationFrame(animFrameId);
+    if (animFrameId && typeof cancelAnimationFrame !== 'undefined') {
+      cancelAnimationFrame(animFrameId);
+    }
 
     const store = getStore();
     const currentState = store.getState();
@@ -192,25 +208,27 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       save: updatedSave,
     });
 
-    // 8. Display Action Buttons in UI
-    const actionDeck = root.querySelector('#touchdown-actions') as HTMLElement;
-    if (actionDeck) {
-      actionDeck.style.display = 'flex';
-      if (flightResult.outcome === 'crash') {
-        actionDeck.innerHTML = `
-          <button class="primary" id="btn-goto-results" style="background:var(--danger)">View Incident Report →</button>
-        `;
-      } else {
-        actionDeck.innerHTML = `
-          <button class="primary" id="btn-goto-scavenge">Deploy Surface Operations →</button>
-        `;
-      }
-      root.querySelector('#btn-goto-scavenge')?.addEventListener('click', () => {
-        transitionTo('scavenge');
-      });
-      root.querySelector('#btn-goto-results')?.addEventListener('click', () => {
-        transitionTo('results');
-      });
+    // 8. Update Shell Status Pill and Primary CTA
+    ctaBtn.disabled = false;
+    if (flightResult.outcome === 'crash') {
+      ctaBtn.textContent = 'View Incident Report →';
+      ctaBtn.className = 'ls-btn ls-btn-primary';
+      ctaBtn.style.background = 'var(--ls-red)';
+      ctaBtn.style.borderColor = 'var(--ls-red)';
+      ctaBtn.onclick = () => transitionTo('results');
+    } else {
+      ctaBtn.textContent = 'Deploy Surface Operations →';
+      ctaBtn.className = 'ls-btn ls-btn-primary';
+      ctaBtn.onclick = () => transitionTo('scavenge');
+    }
+
+    // Update pill
+    const pill = root.querySelector('.ls-craft-pill');
+    if (pill) {
+      const dot = pill.querySelector('.ls-pill-dot');
+      if (dot) dot.className = `ls-pill-dot ${flightResult.outcome === 'soft' ? '' : 'error'}`;
+      const span = pill.querySelector('span:last-child');
+      if (span) span.textContent = `${state.design.name} · ${flightResult.outcome.toUpperCase()}`;
     }
   }
 
@@ -243,140 +261,188 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       const h = canvas.height;
 
       // 1. Clear background
-      ctx.fillStyle = '#050814';
+      ctx.fillStyle = '#040711';
       ctx.fillRect(0, 0, w, h);
 
       // 2. Starfield
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      for (let i = 0; i < 50; i++) {
-        const sx = (i * 197) % w;
-        const sy = (i * 83) % (h - 80);
-        ctx.fillRect(sx, sy, 1.5, 1.5);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      for (let i = 0; i < 60; i++) {
+        const sx = (i * 233) % w;
+        const sy = (i * 97) % (h - 90);
+        ctx.fillRect(sx, sy, 1.2, 1.2);
       }
 
       // 3. Ground Surface & Landing Target
-      const groundY = h - 60;
-      ctx.fillStyle = body.id === 'mars' ? '#881337' : body.id === 'venus' ? '#854d0e' : '#334155';
-      ctx.fillRect(0, groundY, w, 60);
+      const groundY = h - 70;
+      ctx.fillStyle = body.id === 'mars' ? '#4c1d24' : body.id === 'venus' ? '#4a3b1a' : '#1e293b';
+      ctx.fillRect(0, groundY, w, 70);
+
+      // Ground horizon line
+      ctx.strokeStyle = 'var(--ls-border-mid)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(w, groundY);
+      ctx.stroke();
 
       // Bullseye target rings on ground
       const centerX = w / 2;
-      const ringColors = ['#1e293b', '#0369a1', '#0284c7', '#38bdf8', '#22c55e'];
-      const ringWidths = [240, 180, 120, 70, 30];
+      const ringColors = ['#0f172a', '#1e3a5f', '#1d4ed8', '#0284c7', '#1FA971'];
+      const ringWidths = [300, 220, 150, 80, 36];
       for (let r = 0; r < 5; r++) {
-        ctx.fillStyle = ringColors[r] ?? '#22c55e';
-        const rw = ringWidths[r] ?? 30;
+        ctx.fillStyle = ringColors[r] ?? '#1FA971';
+        const rw = ringWidths[r] ?? 36;
         ctx.fillRect(centerX - rw / 2, groundY, rw, 8);
       }
 
+      // Ring target marker
+      ctx.strokeStyle = '#FF5A1F';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(centerX, groundY - 12);
+      ctx.lineTo(centerX, groundY);
+      ctx.stroke();
+
       // 4. Spacecraft Position (Scaled for Display)
-      // Viewport: target (0,0) at centerX, groundY. Height scale 1000m -> 320px
-      const scaleY = (groundY - 40) / 1000;
-      const craftY = Math.max(40, groundY - s.yM * scaleY);
-      const craftX = Math.max(30, Math.min(w - 30, centerX + s.xM * 0.5));
+      const scaleY = (groundY - 50) / 1000;
+      const craftY = Math.max(50, groundY - s.yM * scaleY);
+      const craftX = Math.max(40, Math.min(w - 40, centerX + s.xM * 0.6));
 
       ctx.save();
       ctx.translate(craftX, craftY);
       ctx.rotate((s.tiltDeg * Math.PI) / 180);
 
       // Rocket Cabin
-      ctx.fillStyle = '#f1f5f9';
+      ctx.fillStyle = '#E8EAF0';
       ctx.beginPath();
-      ctx.moveTo(0, -22);
-      ctx.lineTo(10, 8);
-      ctx.lineTo(-10, 8);
+      ctx.moveTo(0, -24);
+      ctx.lineTo(11, 8);
+      ctx.lineTo(-11, 8);
       ctx.closePath();
       ctx.fill();
 
       // Cockpit window
-      ctx.fillStyle = '#0284c7';
+      ctx.fillStyle = '#3A8EF6';
       ctx.beginPath();
-      ctx.arc(0, -8, 3.5, 0, Math.PI * 2);
+      ctx.arc(0, -9, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
       // Landing Legs
-      ctx.strokeStyle = '#94a3b8';
+      ctx.strokeStyle = '#7A8AA0';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(-8, 6);
-      ctx.lineTo(-16, 18);
-      ctx.moveTo(8, 6);
-      ctx.lineTo(16, 18);
+      ctx.moveTo(-9, 6);
+      ctx.lineTo(-18, 19);
+      ctx.moveTo(9, 6);
+      ctx.lineTo(18, 19);
       ctx.stroke();
 
       // Engine Thruster Flame
       if (s.throttle > 0.05 && s.fuelKg > 0) {
-        ctx.fillStyle = s.throttle > 0.5 ? '#f97316' : '#eab308';
+        ctx.fillStyle = s.throttle > 0.5 ? '#FF5A1F' : '#E8920A';
         ctx.beginPath();
         ctx.moveTo(-6, 8);
         ctx.lineTo(6, 8);
-        ctx.lineTo(0, 8 + s.throttle * 22 + Math.random() * 4);
+        ctx.lineTo(0, 8 + s.throttle * 24 + Math.random() * 5);
         ctx.closePath();
         ctx.fill();
       }
 
       ctx.restore();
 
-      // 5. Telemetry HUD Overlay
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-      ctx.fillRect(15, 15, 280, 160);
-      ctx.strokeStyle = '#334155';
+      // 5. Telemetry HUD Overlay (Top-Left)
+      ctx.fillStyle = 'rgba(17, 22, 32, 0.85)';
+      ctx.fillRect(16, 16, 290, 190);
+      ctx.strokeStyle = '#1E2A3E';
       ctx.lineWidth = 1;
-      ctx.strokeRect(15, 15, 280, 160);
+      ctx.strokeRect(16, 16, 290, 190);
 
-      ctx.font = '13px monospace';
-      ctx.fillStyle = '#94a3b8';
+      // Header in HUD
+      ctx.font = '10px monospace';
+      ctx.fillStyle = '#4E5C72';
+      ctx.fillText('LIVE DESCENT TELEMETRY', 26, 32);
+
+      ctx.font = '12px monospace';
 
       // Altitude
-      ctx.fillText(`ALTITUDE : ${formatDistance(s.yM)}`, 25, 38);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('ALTITUDE :', 26, 54);
+      ctx.fillStyle = '#E8EAF0';
+      ctx.fillText(formatDistance(s.yM), 120, 54);
 
       // Vertical Speed (color-coded)
       const vSafe = Math.abs(s.vyMs) <= stats.touchdownLimits.maxVyMs;
-      ctx.fillStyle = vSafe ? '#4ade80' : '#f87171';
-      ctx.fillText(`V-SPEED  : ${formatSpeed(s.vyMs)}`, 25, 60);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('V-SPEED  :', 26, 76);
+      ctx.fillStyle = vSafe ? '#1FA971' : '#E03535';
+      ctx.fillText(formatSpeed(s.vyMs), 120, 76);
 
       // Horizontal Speed
       const hSafe = Math.abs(s.vxMs) <= stats.touchdownLimits.maxVxMs;
-      ctx.fillStyle = hSafe ? '#94a3b8' : '#f87171';
-      ctx.fillText(`H-SPEED  : ${formatSpeed(s.vxMs)}`, 25, 82);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('H-SPEED  :', 26, 98);
+      ctx.fillStyle = hSafe ? '#1FA971' : '#E03535';
+      ctx.fillText(formatSpeed(s.vxMs), 120, 98);
 
       // Tilt
       const tiltSafe = Math.abs(s.tiltDeg) <= stats.touchdownLimits.maxTiltDeg;
-      ctx.fillStyle = tiltSafe ? '#94a3b8' : '#f87171';
-      ctx.fillText(`TILT     : ${formatAngleDeg(s.tiltDeg)}`, 25, 104);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('TILT     :', 26, 120);
+      ctx.fillStyle = tiltSafe ? '#1FA971' : '#E03535';
+      ctx.fillText(formatAngleDeg(s.tiltDeg), 120, 120);
 
       // Fuel & Throttle
-      ctx.fillStyle = s.fuelKg > 10 ? '#38bdf8' : '#ef4444';
       const fuelPct = stats.fuelMassKg > 0 ? s.fuelKg / stats.fuelMassKg : 0;
-      ctx.fillText(`FUEL     : ${s.fuelKg.toFixed(0)} kg (${formatPercent(fuelPct)})`, 25, 126);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('FUEL     :', 26, 142);
+      ctx.fillStyle = s.fuelKg > 20 ? '#3A8EF6' : '#E03535';
+      ctx.fillText(`${s.fuelKg.toFixed(0)} kg (${formatPercent(fuelPct)})`, 120, 142);
 
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillText(`THROTTLE : ${formatPercent(s.throttle)}`, 25, 148);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('THROTTLE :', 26, 164);
+      ctx.fillStyle = '#FF5A1F';
+      ctx.fillText(formatPercent(s.throttle), 120, 164);
 
-      // Flight State Status Banner
+      // Heat
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('THERMAL  :', 26, 186);
+      ctx.fillStyle = s.heatMJ > 5 ? '#E03535' : s.heatMJ > 1 ? '#E8920A' : '#1FA971';
+      ctx.fillText(`${s.heatMJ.toFixed(1)} MJ`, 120, 186);
+
+      // Flight State Status Banner on Landing / Crash
       if (s.phase === 'landed' || s.phase === 'crashed') {
         const ring = ringForDistance(Math.abs(s.xM), state.save.difficulty);
-        ctx.fillStyle = s.phase === 'landed' ? 'rgba(22, 101, 52, 0.9)' : 'rgba(153, 27, 27, 0.9)';
-        ctx.fillRect(w / 2 - 200, h / 2 - 45, 400, 90);
-        ctx.strokeStyle = s.phase === 'landed' ? '#4ade80' : '#ef4444';
+        const isSoft = s.phase === 'landed';
+
+        ctx.fillStyle = isSoft ? 'rgba(31, 169, 113, 0.92)' : 'rgba(224, 53, 53, 0.92)';
+        ctx.fillRect(w / 2 - 220, h / 2 - 50, 440, 100);
+        ctx.strokeStyle = isSoft ? '#1FA971' : '#E03535';
         ctx.lineWidth = 2;
-        ctx.strokeRect(w / 2 - 200, h / 2 - 45, 400, 90);
+        ctx.strokeRect(w / 2 - 220, h / 2 - 50, 440, 100);
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px sans-serif';
+        ctx.font = 'bold 20px monospace';
         ctx.textAlign = 'center';
         ctx.fillText(
-          s.phase === 'landed' ? 'TOUCHDOWN CONFIRMED' : 'MISSION FAILURE: CRASH',
+          isSoft ? 'TOUCHDOWN CONFIRMED' : 'MISSION FAILURE: CRASH',
           w / 2,
-          h / 2 - 15
+          h / 2 - 16
         );
 
-        ctx.font = '14px monospace';
-        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '13px monospace';
+        ctx.fillStyle = '#f8fafc';
         ctx.fillText(
           `V-Speed: ${s.vyMs.toFixed(1)} m/s | Ring: ${ring} (Dist: ${Math.abs(s.xM).toFixed(1)}m)`,
           w / 2,
-          h / 2 + 15
+          h / 2 + 14
+        );
+
+        ctx.font = '11px sans-serif';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillText(
+          isSoft ? 'Select "Deploy Surface Operations" below to begin scavenging.' : 'Select "View Incident Report" below to debrief.',
+          w / 2,
+          h / 2 + 34
         );
         ctx.textAlign = 'start';
       }
@@ -393,15 +459,27 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
 
   animFrameId = requestAnimationFrame(loop);
 
-  // Auto-Land Simulation Button
-  root.querySelector('#btn-autoland')?.addEventListener('click', () => {
-    const flightResult = autoFly(sim);
-    completeMission(flightResult);
-  });
-
-  // Abort Button
-  root.querySelector('#btn-abort-flight')?.addEventListener('click', () => {
-    sim.state.phase = 'crashed';
-    completeMission(sim.result());
-  });
+  // Clean up animation on DOM removal
+  if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
+    const observer = new MutationObserver(() => {
+      if (typeof document === 'undefined' || !document.body || !document.body.contains(canvas)) {
+        if (animFrameId && typeof cancelAnimationFrame !== 'undefined') {
+          try {
+            cancelAnimationFrame(animFrameId);
+          } catch {
+            // ignore in headless test environment
+          }
+        }
+        try {
+          input.detach();
+        } catch {
+          // ignore in headless test environment
+        }
+        observer.disconnect();
+      }
+    });
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
 }
