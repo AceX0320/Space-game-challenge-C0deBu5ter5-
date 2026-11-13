@@ -29,8 +29,6 @@ export function canTransition(from: GamePhase, to: GamePhase): boolean {
 
 export function transitionTo(targetPhase: GamePhase): boolean {
   const store = getStore();
-  const current = store.getState().phase;
-  // Always permit transitions in dev/router debug bar, but track valid flow
   store.update({ phase: targetPhase });
   return true;
 }
