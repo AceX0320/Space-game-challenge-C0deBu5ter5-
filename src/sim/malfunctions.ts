@@ -1,6 +1,6 @@
 import type { Difficulty, MissionEvent, ShipDesign } from '@/types';
 import { createRng, randPick } from '@/core/rng';
-import { DEFAULT_FLAGS } from '@/config/feature-flags';
+import { getDifficultySettings } from '@/config/constants';
 
 const MALFUNCTION_POOL: Array<{ kind: MissionEvent['kind']; text: string }> = [
   { kind: 'malfunction', text: 'Engine-out: one engine has shut down. Thrust reduced.' },
@@ -22,7 +22,7 @@ export function rollMalfunctions(
   difficulty: Difficulty,
   seed: number
 ): MissionEvent[] {
-  if (!DEFAULT_FLAGS.malfunctions || difficulty !== 'hard') return [];
+  if (!getDifficultySettings(difficulty).malfunctionsOn) return [];
 
   const rng = createRng(seed);
   const count = design.parts.length > 8 ? 2 : 1;

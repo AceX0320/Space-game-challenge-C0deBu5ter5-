@@ -1,5 +1,5 @@
 import type { Difficulty, PartInstance } from '@/types';
-import { WEAR_MULTIPLIERS } from '@/config/constants';
+import { getDifficultySettings } from '@/config/constants';
 import { clamp } from '@/core/units';
 
 /**
@@ -13,7 +13,7 @@ export function applyWear(
   difficulty: Difficulty,
   usage: Record<string, number>
 ): PartInstance[] {
-  const mult = WEAR_MULTIPLIERS[difficulty] ?? 1;
+  const mult = getDifficultySettings(difficulty).wearRate;
   return parts.map((part) => {
     const usageIntensity = usage[part.instanceId] ?? 1;
     const wearAmount = 5 * mult * usageIntensity; // base 5% per mission at Normal

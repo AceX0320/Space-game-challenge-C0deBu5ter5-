@@ -1,5 +1,5 @@
 import type { Contract, MissionResult, PayoutResult, SaveGame, ShipStats } from '@/types';
-import { MAX_STREAK_MULTIPLIER, RING_SCORES, REPLAY_REWARD_FRACTION } from '@/config/constants';
+import { MAX_STREAK_MULTIPLIER, RING_SCORES, REPLAY_REWARD_FRACTION, getDifficultySettings } from '@/config/constants';
 
 /**
  * Compute the full payout for a completed mission.
@@ -17,6 +17,14 @@ export function computePayout(
   repairCostM: number
 ): PayoutResult {
   const { flight, scavenge } = result;
+
+  // Apply difficulty budget modifier (easy = 1.5×, normal = 1.0×, hard = 0.8×)
+  const diffSettings = getDifficultySettings(save.difficulty);
+  const effectiveBudgetCapM = diffSettings.unlimitedFunds
+    ? Infinity
+    : contract.budgetCapM * diffSettings.budgetModifier;
+  // TODO(owner-3): use effectiveBudgetCapM in validation checks when owner-2 adds real budget enforcement
+  void effectiveBudgetCapM;
 
   // Landing multiplier: based on ring score (0–100 -> 0.0–1.0)
   const ringScore = RING_SCORES[flight.landingRing] ?? 0;

@@ -20,3 +20,10 @@ Never call `Math.random()` directly in game logic.
 
 ## Data source rule
 Every number in JSON data files must have a `source` field: `"nasa"`, `"game"`, or `"fictional"`.
+
+## Tutorial Anchors
+
+UI elements that serve as tutorial targets expose a `data-tutorial="<id>"` attribute.
+Defined IDs: `contract-brief`, `parts-menu`, `throttle-slider`, `skip-transit-btn`.
+See `src/data/tutorial.ts` (`ONBOARDING_SCRIPT`) for the full mapping.
+
