@@ -16,3 +16,4 @@ export const mockScavengeResult: ScavengeResult = {
     { tS: 800, kind: 'info', text: 'Downlinked 20 MB of compressed telemetry and imagery.' },
   ],
 };
+

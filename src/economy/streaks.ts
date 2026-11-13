@@ -63,3 +63,4 @@ export function updateStreaks(
 
   return { streaks: updated, safetyNets, multiplier: computeMultiplier(updated) };
 }
+

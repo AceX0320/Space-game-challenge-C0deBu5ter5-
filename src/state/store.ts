@@ -93,3 +93,4 @@ export function getStore(): Store {
   }
   return storeInstance;
 }
+

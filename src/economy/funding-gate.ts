@@ -7,3 +7,4 @@ import type { Contract, SaveGame } from '@/types';
 export function nextContractUnlocked(save: SaveGame, contract: Contract): boolean {
   return save.fundsM >= contract.fundingGateM;
 }
+

@@ -120,3 +120,4 @@ describe('generateReport', () => {
     expect(report.suggestions.length).toBeGreaterThan(0);
   });
 });
+

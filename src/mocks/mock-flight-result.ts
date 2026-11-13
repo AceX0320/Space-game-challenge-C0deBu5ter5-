@@ -18,3 +18,4 @@ export const mockFlightResult: FlightResult = {
     { tS: 580, kind: 'milestone', text: 'Touchdown! Spacecraft safely on the surface.' },
   ],
 };
+

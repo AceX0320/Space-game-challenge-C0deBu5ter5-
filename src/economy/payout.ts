@@ -73,3 +73,4 @@ export function computePayout(
     score: { landing, science, efficiency, decisions, teamBonus, total },
   };
 }
+

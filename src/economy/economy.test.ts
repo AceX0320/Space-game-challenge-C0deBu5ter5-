@@ -70,3 +70,4 @@ describe('nextContractUnlocked', () => {
     expect(nextContractUnlocked(save, contract)).toBe(false);
   });
 });
+

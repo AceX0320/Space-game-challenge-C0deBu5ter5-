@@ -46,3 +46,4 @@ export function renderHome(root: HTMLElement, state: GameState): void {
     transitionTo('team');
   });
 }
+

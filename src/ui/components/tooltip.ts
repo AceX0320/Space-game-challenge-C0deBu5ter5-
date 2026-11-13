@@ -10,3 +10,4 @@ export function createTooltip(text: string): HTMLElement {
   span.style.fontSize = '0.85em';
   return span;
 }
+
