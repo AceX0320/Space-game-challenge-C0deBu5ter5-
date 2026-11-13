@@ -3,14 +3,16 @@ import { Body } from './body';
 import { Ship } from './ship';
 import { G } from './constants';
 
-// ---- 1. Gravity ----
+// Below this relative radial speed, contact is "resting" — no impact event fires.
+export const IMPACT_EPSILON = 0.5; // m/s
 
-/** Total gravitational acceleration at `pos` from all bodies. */
+// ---- Gravity ----
+
 export function gravityAt(pos: Vec2, bodies: Body[]): Vec2 {
   let a = new Vec2();
   for (const b of bodies) {
     const d = b.position.sub(pos);
-    const soft2 = Math.pow(0.01 * b.radius, 2);   // per-body softening
+    const soft2 = Math.pow(0.01 * b.radius, 2); // per-body softening
     const r2 = d.mag2() + soft2;
     const g = (G * b.mass) / r2;
     a = a.add(d.norm().scale(g));
@@ -18,33 +20,23 @@ export function gravityAt(pos: Vec2, bodies: Body[]): Vec2 {
   return a;
 }
 
-/** Gravity magnitude at `pos` — used for HUD & takeoff/landing checks. */
 export function localG(pos: Vec2, bodies: Body[]): number {
   return gravityAt(pos, bodies).mag();
 }
 
-// ---- 2. Weight ----
+// ---- Weight & thrust-to-weight ----
 
-/** Weight = current ship mass × local g. Changes with fuel/cargo/player. */
 export function weight(ship: Ship, bodies: Body[]): number {
   return ship.mass * localG(ship.position, bodies);
 }
 
-// ---- 3. Thrust-to-Weight ----
-
-/**
- * TWR = thrust / weight.
- * TWR > 1  → can lift off.
- * TWR = 1  → hover.
- * TWR < 1  → cannot leave surface.
- */
 export function twr(ship: Ship, bodies: Body[], throttle = 1): number {
   const w = weight(ship, bodies);
   if (w === 0) return Infinity;
   return (ship.thrust * throttle) / w;
 }
 
-// ---- 4. Orbit helpers (very useful for takeoff target) ----
+// ---- Body-level derived quantities ----
 
 export function surfaceGravity(b: Body): number {
   return (G * b.mass) / (b.radius * b.radius);
@@ -58,14 +50,20 @@ export function orbitalVelocity(b: Body, altitude = 0): number {
   return Math.sqrt((G * b.mass) / (b.radius + altitude));
 }
 
-// ---- 5. Altitude & surface ----
+// ---- Position & nearest body ----
+// Widened shape — Ship still works, so does a lightweight { position, radius } probe.
 
-export function altitude(ship: Ship, b: Body): number {
+export function altitude(
+  ship: { position: Vec2; radius: number },
+  b: Body
+): number {
   return ship.position.sub(b.position).mag() - b.radius - ship.radius;
 }
 
-/** Nearest body (by altitude below other bodies' surfaces). */
-export function nearestBody(ship: Ship, bodies: Body[]): { body: Body; altitude: number } | null {
+export function nearestBody(
+  ship: { position: Vec2; radius: number },
+  bodies: Body[]
+): { body: Body; altitude: number } | null {
   let best: { body: Body; altitude: number } | null = null;
   for (const b of bodies) {
     const alt = altitude(ship, b);
@@ -74,7 +72,7 @@ export function nearestBody(ship: Ship, bodies: Body[]): { body: Body; altitude:
   return best;
 }
 
-// ---- 6. Takeoff check ----
+// ---- Takeoff ----
 
 export interface TakeoffResult {
   canLiftOff: boolean;
@@ -86,14 +84,18 @@ export interface TakeoffResult {
   orbitalVelocity: number;
 }
 
-export function canTakeOff(ship: Ship, bodies: Body[], throttle = 1): TakeoffResult {
+export function canTakeOff(
+  ship: Ship,
+  bodies: Body[],
+  throttle = 1
+): TakeoffResult {
   const nb = nearestBody(ship, bodies);
   if (!nb) throw new Error('no bodies');
   const { body, altitude: alt } = nb;
 
   const g = localG(ship.position, bodies);
   const w = ship.mass * g;
-  const t = ship.fuelMass > 0 ? ship.thrust * throttle : 0;   // ← fix
+  const t = ship.fuelMass > 0 ? ship.thrust * throttle : 0;
 
   return {
     canLiftOff: t > w,
@@ -106,18 +108,15 @@ export function canTakeOff(ship: Ship, bodies: Body[], throttle = 1): TakeoffRes
   };
 }
 
-// ---- 7. Landing check ----
-
-export const MAX_SAFE_LANDING_SPEED = 20; // m/s — tune per planet
-export const MAX_SAFE_LANDING_ANGLE_DEG = 30;
+// ---- Landing (predictive — call BEFORE stepShip) ----
 
 export interface LandingResult {
   onSurface: boolean;
   altitude: number;
-  impactSpeed: number;          // m/s, radial component toward surface
-  impactAngleDeg: number;       // angle from surface normal
+  impactSpeed: number;      // m/s, positive
+  impactAngleDeg: number;   // 0 = head-on, 90 = grazing
   crashed: boolean;
-  normal: Vec2;                 // outward surface normal
+  normal: Vec2;
 }
 
 export function checkLanding(ship: Ship, bodies: Body[]): LandingResult {
@@ -126,58 +125,59 @@ export function checkLanding(ship: Ship, bodies: Body[]): LandingResult {
   const { body, altitude: alt } = nb;
 
   const normal = ship.position.sub(body.position).norm();
-  const vRel = ship.velocity.sub(body.velocity);          // ← NEW: relative velocity
-  const vRadial = vRel.dot(normal);                        // negative = toward surface
+  const vRel = ship.velocity.sub(body.velocity);
+  const vRadial = vRel.dot(normal);
   const impactSpeed = Math.max(0, -vRadial);
 
-  const vTan = vRel.sub(normal.scale(vRadial));            // ← uses vRel now
-  const angleDeg = Math.atan2(vTan.mag(), Math.abs(vRadial)) * 180 / Math.PI;
+  // Angle is only meaningful when actually descending.
+  const vTan = vRel.sub(normal.scale(vRadial));
+  const angleDeg = impactSpeed > 1e-6
+    ? Math.atan2(vTan.mag(), impactSpeed) * 180 / Math.PI
+    : 0;
 
   const onSurface = alt <= 0;
   const crashed = onSurface && (
-    impactSpeed > MAX_SAFE_LANDING_SPEED ||
-    angleDeg > MAX_SAFE_LANDING_ANGLE_DEG
+    impactSpeed > body.maxSafeLandingSpeed ||
+    angleDeg > body.maxSafeLandingAngleDeg
   );
 
   return { onSurface, altitude: alt, impactSpeed, impactAngleDeg: angleDeg, crashed, normal };
 }
 
-// ---- 8. Integration step (pure, no world class needed) ----
+// ---- Integration ----
 
 export interface StepOptions {
   dt: number;
   substeps?: number;
 }
 
-export function stepShip(ship: Ship, bodies: Body[], opts: StepOptions) {
-  const substeps = opts.substeps ?? Math.max(1, Math.ceil(opts.dt / 0.02));
+export function stepShip(ship: Ship, bodies: Body[], opts: StepOptions): void {
+  if (!Number.isFinite(opts.dt) || opts.dt <= 0) {
+    throw new Error(`stepShip: dt must be > 0 (got ${opts.dt})`);
+  }
+  // Clear last-impact so this call reports only this step's contacts.
+  ship.lastImpact = null;
+
+  const requested = opts.substeps ?? Math.ceil(opts.dt / 0.02);
+  const substeps = Math.max(1, Math.floor(requested));
   const h = opts.dt / substeps;
 
   for (let i = 0; i < substeps; i++) {
-    // 1. gravity from all bodies
     const aGrav = gravityAt(ship.position, bodies);
-
-    // 2. thrust (mass can be changed by burnFuel, so compute after)
     const aThrust = ship.thrustForce().scale(1 / ship.mass);
-
-    // 3. total acceleration
     const aTotal = aGrav.add(aThrust);
 
-    // 4. semi-implicit Euler (fine for gameplay; velocity Verlet better for pure orbits)
     ship.velocity = ship.velocity.add(aTotal.scale(h));
     ship.position = ship.position.add(ship.velocity.scale(h));
 
-    // 5. fuel burn changes mass
     ship.burnFuel(h);
-
-    // 6. ground contact
     resolveGround(ship, bodies);
   }
 }
 
-// ---- 9. Ground contact ----
+// ---- Ground contact ----
 
-export function resolveGround(ship: Ship, bodies: Body[]) {
+export function resolveGround(ship: Ship, bodies: Body[]): void {
   for (const b of bodies) {
     const d = ship.position.sub(b.position);
     const dist = d.mag();
@@ -187,32 +187,34 @@ export function resolveGround(ship: Ship, bodies: Body[]) {
     const n = dist > 0 ? d.norm() : new Vec2(0, 1);
     ship.position = b.position.add(n.scale(surface));
 
-    // Work in the body's frame so a moving planet doesn't fake a crash.
+    // Work in the body's frame — moving planets must not fake a crash.
     const vRel = ship.velocity.sub(b.velocity);
-const vRadial = vRel.dot(n);
+    const vRadial = vRel.dot(n);
 
-// Capture impact data BEFORE zeroing velocity — this is the actual contact event.
-if (vRadial < 0) {
-  const impactSpeed = -vRadial;
-  const vTanImpact = vRel.sub(n.scale(vRadial));
-  const angleDeg = Math.atan2(vTanImpact.mag(), impactSpeed) * 180 / Math.PI;
-  ship.lastImpact = {
-    bodyName: b.name,
-    speed: impactSpeed,
-    angleDeg,
-    crashed:
-      impactSpeed > MAX_SAFE_LANDING_SPEED ||
-      angleDeg > MAX_SAFE_LANDING_ANGLE_DEG,
-  };
-}
+    // Record the impact BEFORE zeroing velocity. First impact this step wins.
+    if (vRadial < -IMPACT_EPSILON && ship.lastImpact === null) {
+      const impactSpeed = -vRadial;
+      const vTanI = vRel.sub(n.scale(vRadial));
+      const angleDeg = Math.atan2(vTanI.mag(), impactSpeed) * 180 / Math.PI;
+      ship.lastImpact = {
+        bodyName: b.name,
+        speed: impactSpeed,
+        angleDeg,
+        crashed:
+          impactSpeed > b.maxSafeLandingSpeed ||
+          angleDeg > b.maxSafeLandingAngleDeg,
+      };
+    }
 
-let vNew = vRel;
-if (vRadial < 0) vNew = vNew.sub(n.scale(vRadial));
+    // Zero any inward radial component so we don't sink into the surface.
+    let vNew = vRel;
+    if (vRadial < 0) vNew = vNew.sub(n.scale(vRadial));
 
-const vRadialResolved = vNew.dot(n);
-const vTanResolved = vNew.sub(n.scale(vRadialResolved));
-vNew = n.scale(vRadialResolved).add(vTanResolved.scale(0.98));
+    // Tangential friction — per-body.
+    const vr2 = vNew.dot(n);
+    const vt2 = vNew.sub(n.scale(vr2));
+    vNew = n.scale(vr2).add(vt2.scale(b.surfaceFriction));
 
-ship.velocity = vNew.add(b.velocity);
-}
+    ship.velocity = vNew.add(b.velocity);
+  }
 }
