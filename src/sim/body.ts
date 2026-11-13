@@ -1,19 +1,27 @@
 import { Vec2 } from './vec2';
-import { DEFAULT_DENSITY } from './constants';
+import {
+  DEFAULT_DENSITY,
+  G,
+  MOON_RADIUS,
+  MARS_RADIUS,
+  VENUS_RADIUS,
+  TITAN_RADIUS,
+} from './constants';
+import type { Body as GameBody } from '@/types';
 
 export interface BodyInit {
   name: string;
   position: Vec2;
   velocity?: Vec2;
-  radius: number;                    // m, required
-  mass?: number;                     // kg — if omitted, derived from density × volume
-  density?: number;                  // kg/m³ — used when mass omitted; defaults to DEFAULT_DENSITY
-  maxSafeLandingSpeed?: number;      // m/s, default 20
-  maxSafeLandingAngleDeg?: number;   // degrees from surface normal, default 30
-  surfaceFriction?: number;          // per-step tangential multiplier, default 0.98
+  radius: number; // m, required
+  mass?: number; // kg — if omitted, derived from density × volume
+  density?: number; // kg/m³ — used when mass omitted; defaults to DEFAULT_DENSITY
+  maxSafeLandingSpeed?: number; // m/s, default 20
+  maxSafeLandingAngleDeg?: number; // degrees from surface normal, default 30
+  surfaceFriction?: number; // per-step tangential multiplier, default 0.98
 }
 
-export class Body {
+export class SimBody {
   name: string;
   position: Vec2;
   velocity: Vec2;
@@ -61,8 +69,46 @@ export class Body {
     if (!Number.isFinite(this.maxSafeLandingAngleDeg) || this.maxSafeLandingAngleDeg <= 0) {
       throw new Error(`Body ${p.name}: maxSafeLandingAngleDeg must be > 0`);
     }
-    if (!Number.isFinite(this.surfaceFriction) || this.surfaceFriction < 0 || this.surfaceFriction > 1) {
+    if (
+      !Number.isFinite(this.surfaceFriction) ||
+      this.surfaceFriction < 0 ||
+      this.surfaceFriction > 1
+    ) {
       throw new Error(`Body ${p.name}: surfaceFriction must be in [0, 1]`);
     }
   }
+
+  /**
+   * Create a SimBody from a high-level GameBody definition.
+   * Mass is mathematically derived so surface gravity matches body.gravityMs2 exactly:
+   * g = G * M / R^2  =>  M = g * R^2 / G
+   */
+  static fromGameBody(
+    body: GameBody,
+    position: Vec2 = new Vec2(0, 0),
+    limits?: { maxVyMs?: number; maxTiltDeg?: number }
+  ): SimBody {
+    let radius = MOON_RADIUS;
+    const id = body.id.toLowerCase();
+    if (id === 'mars') radius = MARS_RADIUS;
+    else if (id === 'venus') radius = VENUS_RADIUS;
+    else if (id === 'titan') radius = TITAN_RADIUS;
+    else if (id === 'asteroid') radius = 50_000;
+
+    // Derived mass ensures exact surface gravity match
+    const mass = (body.gravityMs2 * Math.pow(radius, 2)) / G;
+
+    return new SimBody({
+      name: body.name,
+      position,
+      radius,
+      mass,
+      maxSafeLandingSpeed: limits?.maxVyMs ?? 6,
+      maxSafeLandingAngleDeg: limits?.maxTiltDeg ?? 15,
+      surfaceFriction: 0.95,
+    });
+  }
 }
+
+// Alias for internal sim usage
+export { SimBody as Body };

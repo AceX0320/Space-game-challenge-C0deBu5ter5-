@@ -1,5 +1,5 @@
 import { Vec2 } from './vec2';
-import { Body } from './body';
+import { SimBody as Body } from './body';
 import { Ship } from './ship';
 import { G } from './constants';
 
@@ -51,12 +51,8 @@ export function orbitalVelocity(b: Body, altitude = 0): number {
 }
 
 // ---- Position & nearest body ----
-// Widened shape — Ship still works, so does a lightweight { position, radius } probe.
 
-export function altitude(
-  ship: { position: Vec2; radius: number },
-  b: Body
-): number {
+export function altitude(ship: { position: Vec2; radius: number }, b: Body): number {
   return ship.position.sub(b.position).mag() - b.radius - ship.radius;
 }
 
@@ -84,11 +80,7 @@ export interface TakeoffResult {
   orbitalVelocity: number;
 }
 
-export function canTakeOff(
-  ship: Ship,
-  bodies: Body[],
-  throttle = 1
-): TakeoffResult {
+export function canTakeOff(ship: Ship, bodies: Body[], throttle = 1): TakeoffResult {
   const nb = nearestBody(ship, bodies);
   if (!nb) throw new Error('no bodies');
   const { body, altitude: alt } = nb;
@@ -113,8 +105,8 @@ export function canTakeOff(
 export interface LandingResult {
   onSurface: boolean;
   altitude: number;
-  impactSpeed: number;      // m/s, positive
-  impactAngleDeg: number;   // 0 = head-on, 90 = grazing
+  impactSpeed: number; // m/s, positive
+  impactAngleDeg: number; // 0 = head-on, 90 = grazing
   crashed: boolean;
   normal: Vec2;
 }
@@ -131,15 +123,11 @@ export function checkLanding(ship: Ship, bodies: Body[]): LandingResult {
 
   // Angle is only meaningful when actually descending.
   const vTan = vRel.sub(normal.scale(vRadial));
-  const angleDeg = impactSpeed > 1e-6
-    ? Math.atan2(vTan.mag(), impactSpeed) * 180 / Math.PI
-    : 0;
+  const angleDeg = impactSpeed > 1e-6 ? (Math.atan2(vTan.mag(), impactSpeed) * 180) / Math.PI : 0;
 
   const onSurface = alt <= 0;
-  const crashed = onSurface && (
-    impactSpeed > body.maxSafeLandingSpeed ||
-    angleDeg > body.maxSafeLandingAngleDeg
-  );
+  const crashed =
+    onSurface && (impactSpeed > body.maxSafeLandingSpeed || angleDeg > body.maxSafeLandingAngleDeg);
 
   return { onSurface, altitude: alt, impactSpeed, impactAngleDeg: angleDeg, crashed, normal };
 }
@@ -195,14 +183,12 @@ export function resolveGround(ship: Ship, bodies: Body[]): void {
     if (vRadial < -IMPACT_EPSILON && ship.lastImpact === null) {
       const impactSpeed = -vRadial;
       const vTanI = vRel.sub(n.scale(vRadial));
-      const angleDeg = Math.atan2(vTanI.mag(), impactSpeed) * 180 / Math.PI;
+      const angleDeg = (Math.atan2(vTanI.mag(), impactSpeed) * 180) / Math.PI;
       ship.lastImpact = {
         bodyName: b.name,
         speed: impactSpeed,
         angleDeg,
-        crashed:
-          impactSpeed > b.maxSafeLandingSpeed ||
-          angleDeg > b.maxSafeLandingAngleDeg,
+        crashed: impactSpeed > b.maxSafeLandingSpeed || angleDeg > b.maxSafeLandingAngleDeg,
       };
     }
 

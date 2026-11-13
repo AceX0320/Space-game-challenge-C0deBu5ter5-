@@ -1,8 +1,28 @@
-import { Vec2 } from '../sim/vec2';
-import { Body } from '../sim/body';
-import { Ship } from '../sim/ship';
-import { gravityAt, nearestBody } from '../sim/physics';
-import { Trajectory, TrajectoryImpact } from './state';
+import { Vec2 } from './vec2';
+import { SimBody as Body } from './body';
+import { Ship } from './ship';
+import { gravityAt, nearestBody } from './physics';
+
+export interface TrajectoryImpact {
+  body: Body;
+  /** Seconds from "now" until predicted contact. */
+  timeToImpact: number;
+  /** Predicted relative radial speed at contact, m/s, positive. */
+  impactSpeed: number;
+  /** Predicted impact angle from surface normal, degrees. */
+  impactAngleDeg: number;
+}
+
+export interface Trajectory {
+  points: Vec2[];
+  impact: TrajectoryImpact | null;
+  /** Total time span of the prediction, in seconds. */
+  horizon: number;
+}
+
+export function emptyTrajectory(horizon = 0): Trajectory {
+  return { points: [], impact: null, horizon };
+}
 
 export interface TrajectoryOptions {
   /** Total preview window in seconds. Default 60. */
@@ -11,7 +31,7 @@ export interface TrajectoryOptions {
   points?: number;
   /** Internal integration step in seconds. Default 0.05. */
   physicsDt?: number;
-  /** If true, hold the ship's *current* throttle as constant thrust. Default false. */
+  /** If true, hold the ship's current throttle as constant thrust. Default false. */
   includeThrust?: boolean;
 }
 
@@ -22,24 +42,11 @@ const DEFAULTS = {
   includeThrust: false,
 };
 
-/** Max distance the probe may travel per sub-step before dt is shrunk (avoids tunneling). */
 const MAX_TRAVEL_PER_STEP = 5; // meters
-
-/** Upper bound on sub-steps per sampled point (bounds cost at high speed). */
 const MAX_STEPS_PER_POINT = 50;
 
 /**
  * Predict the ship's trajectory from its current state.
- *
- * Uses the same integrator as `stepShip` (semi-implicit Euler + gravityAt),
- * so the returned path reflects what the game will actually do — subject only
- * to the coarser `physicsDt` and the sub-step cap.
- *
- * Returned `points[0]` is always the ship's current position. The path
- * terminates either at `horizon` (impact === null) or at the first contact
- * with a body (impact !== null, last point == contact point).
- *
- * Does not mutate `ship` or `bodies`.
  */
 export function predictTrajectory(
   ship: Ship,
@@ -62,14 +69,8 @@ export function predictTrajectory(
   }
 
   const dtPerPoint = horizon / nPoints;
+  const thrustAcc = thrustOn ? ship.thrustForce().scale(1 / ship.mass) : new Vec2();
 
-  // Constant acceleration from current throttle over the whole preview.
-  const thrustAcc = thrustOn
-    ? ship.thrustForce().scale(1 / ship.mass)
-    : new Vec2();
-
-  // Adaptive sub-step: shrink dt when the ship is moving fast so small bodies
-  // aren't tunneled through. Cap to keep per-call cost bounded.
   const speed = ship.velocity.mag();
   const safeDt = speed > 0 ? MAX_TRAVEL_PER_STEP / speed : userDt;
   const physicsDt = Math.min(userDt, safeDt);
@@ -84,7 +85,6 @@ export function predictTrajectory(
   let elapsed = 0;
 
   const points: Vec2[] = [pos.clone()];
-  // Reused probe — nearestBody only reads .position and .radius.
   const probe: { position: Vec2; radius: number } = {
     position: pos,
     radius: ship.radius,
@@ -114,21 +114,13 @@ export function predictTrajectory(
   return { points, impact: null, horizon };
 }
 
-/** Compute impact data at the moment of contact. Mirrors resolveGround in physics.ts. */
-function computeImpact(
-  pos: Vec2,
-  vel: Vec2,
-  body: Body,
-  timeToImpact: number
-): TrajectoryImpact {
+function computeImpact(pos: Vec2, vel: Vec2, body: Body, timeToImpact: number): TrajectoryImpact {
   const normal = pos.sub(body.position).norm();
   const vRel = vel.sub(body.velocity);
   const vRadial = vRel.dot(normal);
   const impactSpeed = Math.max(0, -vRadial);
   const vTan = vRel.sub(normal.scale(vRadial));
-  const angleDeg = impactSpeed > 1e-6
-    ? Math.atan2(vTan.mag(), impactSpeed) * 180 / Math.PI
-    : 0;
+  const angleDeg = impactSpeed > 1e-6 ? (Math.atan2(vTan.mag(), impactSpeed) * 180) / Math.PI : 0;
 
   return {
     body,

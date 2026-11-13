@@ -1,10 +1,6 @@
 /**
- * The only thing the game layer accepts as player input.
- *
- * The engine never reads the keyboard. It only reacts to this struct.
- * That keeps the physics layer testable from scripted inputs and keeps
- * keyboard handling swappable (keyboard now, gamepad later, replay files
- * eventually).
+ * The input structure the flight simulation and engine accept.
+ * Separates "what the player wants" from "how the keyboard reports it."
  */
 export interface ShipCommand {
   /** Main engine held? Throttle ramps up while true, down while false. */
@@ -15,7 +11,7 @@ export interface ShipCommand {
   rotateRight: boolean;
 }
 
-/** Immutable "nothing pressed" command. Spread it to build a new one. */
+/** Immutable "nothing pressed" command. Safe to spread. */
 export const EMPTY_COMMAND: Readonly<ShipCommand> = Object.freeze({
   thrust: false,
   rotateLeft: false,
@@ -29,13 +25,8 @@ export function emptyCommand(): ShipCommand {
 
 /**
  * Structural equality. Used by the engine to detect "input changed this frame"
- * so it can refresh the predicted trajectory immediately instead of waiting
- * for the next scheduled refresh.
+ * so it can refresh predicted trajectory immediately.
  */
 export function commandsEqual(a: ShipCommand, b: ShipCommand): boolean {
-  return (
-    a.thrust === b.thrust &&
-    a.rotateLeft === b.rotateLeft &&
-    a.rotateRight === b.rotateRight
-  );
+  return a.thrust === b.thrust && a.rotateLeft === b.rotateLeft && a.rotateRight === b.rotateRight;
 }
