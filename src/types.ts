@@ -100,6 +100,7 @@ export interface ShipStats {
   warnings: string[];
   valid: boolean;
   violations: string[];
+  heatCapacityMJ?: number;
 }
 
 export interface AtmosphereSpec {
