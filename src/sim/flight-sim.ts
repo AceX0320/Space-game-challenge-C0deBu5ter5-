@@ -51,6 +51,7 @@ export function createFlightSim(
   difficulty: Difficulty,
   _seed: number
 ): FlightSim {
+  void _seed;
   const state: FlightState = {
     phase: 'ascent',
     tS: 0,
