@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 const base = process.env['VITE_BASE'] ?? '/';
 
 export default defineConfig({
   base,
   resolve: {
-    alias: { '@': resolve(__dirname, 'src') },
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   build: { outDir: 'dist', sourcemap: true },
 });

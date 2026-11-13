@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 export default defineConfig({
   test: {
@@ -7,5 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.test.ts'],
   },
-  resolve: { alias: { '@': resolve(__dirname, 'src') } },
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
 });
