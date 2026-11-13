@@ -3,7 +3,7 @@ import { transitionTo } from '@/state/flow';
 import { getBodies, getContracts, getParts } from '@/data/index';
 import { createPanel } from '@/ui/components/panel';
 import { createMeter } from '@/ui/components/meter';
-import { formatM, kgToT } from '@/core/units';
+import { kgToT } from '@/core/units';
 import { computeShipStats } from '@/builder/compute-ship-stats';
 
 export function renderHangar(root: HTMLElement, state: GameState): void {
