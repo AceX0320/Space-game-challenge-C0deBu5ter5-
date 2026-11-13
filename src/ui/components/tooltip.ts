@@ -1,12 +1,16 @@
 /**
- * Attach a tooltip helper element.
+ * Attach a design-token tooltip to an element or create a tooltip wrapper.
  */
-export function createTooltip(text: string): HTMLElement {
-  const span = document.createElement('span');
-  span.className = 'tooltip-icon';
-  span.title = text;
-  span.textContent = ' ℹ️';
-  span.style.cursor = 'help';
-  span.style.fontSize = '0.85em';
-  return span;
+export function createTooltip(triggerText: string, tooltipText: string): HTMLElement {
+  const wrap = document.createElement('span');
+  wrap.className = 'ls-tooltip-wrap';
+  wrap.innerHTML = `
+    <span>${triggerText}</span>
+    <span class="ls-tooltip-box">${tooltipText}</span>
+  `;
+  return wrap;
+}
+
+export function attachTooltip(target: HTMLElement, text: string): void {
+  target.title = text;
 }
