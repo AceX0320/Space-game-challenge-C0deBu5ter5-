@@ -1,0 +1,68 @@
+/* ==========================================================================
+   LAUNCHSMITH DESIGN TOKENS — from Figma spec (written fallback)
+   Visual language: dark "mission control" — near-black BG, 1px hairline
+   borders, uppercase monospace micro-labels, sans for titles.
+   ========================================================================== */
+
+:root {
+  /* ── Backgrounds ─────────────────────────────────────────────────────── */
+  --ls-bg:          #090c12;   /* page background */
+  --ls-panel:       #111620;   /* panel / card background */
+  --ls-panel-alt:   #161c2a;   /* slightly lighter panel */
+  --ls-surface:     #1a2235;   /* input / chip surface */
+  --ls-overlay:     rgba(9, 12, 18, 0.88);
+
+  /* ── Brand Colours ───────────────────────────────────────────────────── */
+  --ls-orange:      #FF5A1F;   /* Signal Orange — primary CTA, active step */
+  --ls-orange-dim:  #c44215;   /* hover / pressed */
+  --ls-green:       #1FA971;   /* Nominal Green — OK status, positive values, funds */
+  --ls-green-dim:   #167850;
+  --ls-amber:       #E8920A;   /* Warning amber */
+  --ls-amber-dim:   #b46e06;
+  --ls-red:         #E03535;   /* Error / violation */
+  --ls-blue:        #3A8EF6;   /* Info / secondary accent */
+
+  /* ── Text ────────────────────────────────────────────────────────────── */
+  --ls-text:        #E8EAF0;   /* primary text */
+  --ls-text-dim:    #7A8AA0;   /* secondary / dim text */
+  --ls-text-micro:  #4E5C72;   /* micro-labels */
+  --ls-text-inv:    #090c12;   /* text on orange buttons */
+
+  /* ── Borders ─────────────────────────────────────────────────────────── */
+  --ls-border:      #1E2A3E;   /* default hairline */
+  --ls-border-mid:  #2A3A56;   /* slightly visible */
+  --ls-border-active: #FF5A1F;
+
+  /* ── Typography ──────────────────────────────────────────────────────── */
+  --ls-font-sans:   'Inter', system-ui, -apple-system, sans-serif;
+  --ls-font-mono:   'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --ls-size-xs:     0.6875rem; /* 11px */
+  --ls-size-sm:     0.75rem;   /* 12px */
+  --ls-size-base:   0.875rem;  /* 14px */
+  --ls-size-md:     1rem;      /* 16px */
+  --ls-size-lg:     1.125rem;  /* 18px */
+  --ls-size-xl:     1.375rem;  /* 22px */
+  --ls-size-2xl:    1.75rem;   /* 28px */
+  --ls-tracking-wide: 0.08em;
+  --ls-tracking-wider: 0.12em;
+
+  /* ── Spacing ─────────────────────────────────────────────────────────── */
+  --ls-sp-1: 0.25rem;
+  --ls-sp-2: 0.5rem;
+  --ls-sp-3: 0.75rem;
+  --ls-sp-4: 1rem;
+  --ls-sp-5: 1.25rem;
+  --ls-sp-6: 1.5rem;
+  --ls-sp-8: 2rem;
+
+  /* ── Radii ───────────────────────────────────────────────────────────── */
+  --ls-radius-sm:   2px;
+  --ls-radius:      4px;
+  --ls-radius-md:   6px;
+
+  /* ── Shell dimensions ────────────────────────────────────────────────── */
+  --ls-header-h:    52px;
+  --ls-footer-h:    56px;
+  --ls-left-w:      220px;
+  --ls-right-w:     280px;
+}
