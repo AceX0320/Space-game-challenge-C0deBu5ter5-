@@ -128,3 +128,4 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
     transitionTo('results');
   });
 }
+

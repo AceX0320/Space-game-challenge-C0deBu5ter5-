@@ -80,3 +80,4 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
     transitionTo('results');
   });
 }
+
