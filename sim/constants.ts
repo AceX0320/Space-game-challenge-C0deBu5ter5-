@@ -1,0 +1,9 @@
+export const G = 6.6743e-11;          // m³ kg⁻¹ s⁻²
+export const AU = 1.495978707e11;     // m
+export const EARTH_RADIUS = 6.371e6;  // m
+export const EARTH_MASS = 5.972e24;   // kg
+export const MOON_RADIUS = 1.737e6;
+export const MOON_MASS = 7.342e22;
+export const MARS_RADIUS = 3.390e6;
+export const MARS_MASS = 6.417e23;
+export const DEFAULT_DENSITY = 5514;  // kg/m³

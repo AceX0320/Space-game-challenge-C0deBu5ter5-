@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "astro-physics-engine": "^0.2.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "name": "space-game-challenge-c0debu5ter5-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AceX0320/Space-game-challenge-C0deBu5ter5-.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AceX0320/Space-game-challenge-C0deBu5ter5-/issues"
+  },
+  "homepage": "https://github.com/AceX0320/Space-game-challenge-C0deBu5ter5-#readme"
+}
