@@ -31,8 +31,9 @@ export interface FlightSim {
   result(): FlightResult;
 }
 
-// Suppress unused import warning — G0_MS2 reserved for future phases
+// Suppress unused import warning — G0_MS2 and _seed reserved for future phases
 void G0_MS2;
+
 
 /**
  * Create a flight simulation instance.
