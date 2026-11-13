@@ -1,5 +1,31 @@
 import type { Contract, MissionResult, PayoutResult, SaveGame, ShipStats } from '@/types';
-import { MAX_STREAK_MULTIPLIER, RING_SCORES, REPLAY_REWARD_FRACTION, getDifficultySettings } from '@/config/constants';
+import {
+  RING_SCORES,
+  REPLAY_REWARD_FRACTION,
+  getDifficultySettings,
+} from '@/config/constants';
+import { clamp, round } from '@/core/units';
+import { computeStreakMultiplier } from './streaks';
+
+/**
+ * Evaluate earned bonus objective rewards for a completed mission.
+ */
+function computeBonusRewardM(contract: Contract, result: MissionResult): number {
+  const { flight, scavenge } = result;
+  if (flight.outcome === 'crash' || flight.outcome === 'abort') {
+    return 0;
+  }
+
+  let bonusM = 0;
+  for (const bonus of contract.bonusObjectives ?? []) {
+    if (bonus.id === 'bullseye' && flight.landingRing === 5) {
+      bonusM += bonus.extraRewardM;
+    } else if (bonus.id !== 'bullseye' && scavenge && scavenge.itemsFound.length >= 2) {
+      bonusM += bonus.extraRewardM;
+    }
+  }
+  return bonusM;
+}
 
 /**
  * Compute the full payout for a completed mission.
@@ -7,7 +33,6 @@ import { MAX_STREAK_MULTIPLIER, RING_SCORES, REPLAY_REWARD_FRACTION, getDifficul
  *              − buildCost − launchCost − repairCost
  * See concept file section 6 (Economy).
  * Anti-farming rule: replaying pays 30% unless it beats previous best net profit.
- * TODO(owner-3): add launch cost formula based on ship mass and body distance.
  */
 export function computePayout(
   contract: Contract,
@@ -26,57 +51,60 @@ export function computePayout(
   // TODO(owner-3): use effectiveBudgetCapM in validation checks when owner-2 adds real budget enforcement
   void effectiveBudgetCapM;
 
-  // Landing multiplier: based on ring score (0–100 -> 0.0–1.0)
+  // Landing multiplier: differentiated by outcome (crash/abort = 0, rough = 0.35..0.75, soft = 0.60..1.10)
   const ringScore = RING_SCORES[flight.landingRing] ?? 0;
   const landingMult =
-    flight.outcome === 'crash'
+    flight.outcome === 'crash' || flight.outcome === 'abort'
       ? 0
       : flight.outcome === 'rough'
-        ? 0.5 + ringScore / 200
-        : 0.5 + ringScore / 200;
+        ? 0.35 + ringScore / 250
+        : 0.6 + ringScore / 200;
 
   // Science multiplier: based on data transmitted vs generated
-  const scienceMult = scavenge
-    ? Math.min(1, scavenge.dataSentMB / Math.max(1, scavenge.dataGeneratedMB))
-    : 0;
+  const scienceMult =
+    scavenge && scavenge.dataGeneratedMB > 0
+      ? clamp(scavenge.dataSentMB / scavenge.dataGeneratedMB, 0, 1)
+      : 0;
 
   // Streak multiplier (from save state)
-  const streakCount = Object.values(save.streaks).reduce((a, b) => a + b, 0);
-  const streakMultiplier = Math.min(MAX_STREAK_MULTIPLIER, 1 + streakCount * 0.05);
+  const streakMultiplier = computeStreakMultiplier(save.streaks);
 
-  let effectiveRewardM = contract.rewardM;
+  // Base contract reward + any achieved bonus objectives
+  const bonusRewardM = computeBonusRewardM(contract, result);
+  const fullRewardM = contract.rewardM + bonusRewardM;
   const prev = save.completedContracts[contract.id];
 
-  // Base gross reward
-  let grossRewardM = effectiveRewardM * landingMult * scienceMult * streakMultiplier;
+  // Launch cost: 8% of build cost + $1.2M per metric ton of launch mass
+  const launchCostM = round(stats.costM * 0.08 + (stats.totalMassKg / 1000) * 1.2, 2);
+  const buildCostM = round(stats.costM, 2);
+  const safeRepairCostM = round(repairCostM, 2);
 
-  // Launch cost: 10% of build cost (stub)
-  const launchCostM = stats.costM * 0.1;
+  // Tentative unpenalized gross & net reward
+  let grossRewardM = round(fullRewardM * landingMult * scienceMult * streakMultiplier, 2);
+  let netM = round(grossRewardM - buildCostM - launchCostM - safeRepairCostM, 2);
 
-  let netM = grossRewardM - stats.costM - launchCostM - repairCostM;
-
-  // Anti-farming check: if completed before and net profit did not beat previous best
+  // Anti-farming check: if completed before and tentative net profit did not beat previous best
   const isRecord = !prev || netM > prev.bestNetM;
   if (prev && !isRecord) {
-    effectiveRewardM = contract.rewardM * REPLAY_REWARD_FRACTION;
-    grossRewardM = effectiveRewardM * landingMult * scienceMult * streakMultiplier;
-    netM = grossRewardM - stats.costM - launchCostM - repairCostM;
+    const penalizedRewardM = fullRewardM * REPLAY_REWARD_FRACTION;
+    grossRewardM = round(penalizedRewardM * landingMult * scienceMult * streakMultiplier, 2);
+    netM = round(grossRewardM - buildCostM - launchCostM - safeRepairCostM, 2);
   }
 
   // Score breakdown (0–100 scale)
   const landing = ringScore;
   const science = Math.round(scienceMult * 100);
-  const efficiency = Math.round(Math.min(100, Math.max(0, (netM / contract.rewardM) * 100)));
+  const efficiency = Math.round(clamp((netM / Math.max(1, contract.rewardM)) * 100, 0, 100));
   const decisions =
     stats.warnings.length === 0 ? 100 : Math.max(0, 100 - stats.warnings.length * 15);
-  const teamBonus = 0; // TODO(owner-3): add team bonus when teamMode is on
+  const teamBonus = 0;
   const total = Math.round((landing + science + efficiency + decisions + teamBonus) / 4);
 
   return {
     grossRewardM,
-    buildCostM: stats.costM,
+    buildCostM,
     launchCostM,
-    repairCostM,
+    repairCostM: safeRepairCostM,
     streakMultiplier,
     netM,
     isRecord,

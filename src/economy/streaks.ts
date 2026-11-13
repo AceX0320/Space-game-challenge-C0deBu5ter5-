@@ -1,16 +1,19 @@
 import type { Contract, MissionResult, SaveGame, ShipStats, StreakTrack } from '@/types';
-import { DEFAULT_FLAGS } from '@/config/feature-flags';
-import { MAX_STREAK_MULTIPLIER } from '@/config/constants';
+import { MAX_STREAK_MULTIPLIER, SAFETY_NET_COST_M } from '@/config/constants';
+import { clamp, round } from '@/core/units';
 
-function computeMultiplier(streaks: SaveGame['streaks']): number {
+/**
+ * Compute combined streak multiplier (+0.05x per streak point, capped at MAX_STREAK_MULTIPLIER = 2.0x).
+ */
+export function computeStreakMultiplier(streaks: SaveGame['streaks']): number {
   const total = Object.values(streaks).reduce((a, b) => a + b, 0);
-  return Math.min(MAX_STREAK_MULTIPLIER, 1 + total * 0.02);
+  return round(clamp(1 + total * 0.05, 1, MAX_STREAK_MULTIPLIER), 2);
 }
 
 /**
  * Update streak counters after a mission.
+ * All streaks are lost if the mission fails (crash, abort, or out of fuel), unless protected by a safety net.
  * See concept file section 8 (Scoring and streaks).
- * TODO(owner-3): implement real streak conditions using FlightResult data.
  */
 export function updateStreaks(
   streaks: SaveGame['streaks'],
@@ -19,17 +22,18 @@ export function updateStreaks(
   contract: Contract,
   safetyNets: number
 ): { streaks: SaveGame['streaks']; safetyNets: number; multiplier: number } {
-  if (!DEFAULT_FLAGS.streaks) {
-    return { streaks, safetyNets, multiplier: 1 };
-  }
-
   const { flight } = result;
-  const failed = flight.outcome === 'crash' || flight.outcome === 'abort';
+  const failed =
+    flight.outcome === 'crash' || flight.outcome === 'abort' || flight.fuelLeftKg <= 0;
 
   if (failed) {
     if (safetyNets > 0) {
       // Safety net protects streaks once
-      return { streaks, safetyNets: safetyNets - 1, multiplier: computeMultiplier(streaks) };
+      return {
+        streaks: { ...streaks },
+        safetyNets: safetyNets - 1,
+        multiplier: computeStreakMultiplier(streaks),
+      };
     }
     // Reset all streaks
     const reset = Object.fromEntries(
@@ -40,20 +44,21 @@ export function updateStreaks(
 
   const updated = { ...streaks };
 
-  // cleanAscent: ascent fuel use below threshold
+  // cleanAscent: ascent fuel use below threshold (< 25%)
   if (flight.ascentFuelUsedPct < 25) updated.cleanAscent++;
   else updated.cleanAscent = 0;
 
-  // smoothHands: few corrections
+  // smoothHands: few attitude/course corrections (< 5)
   if (flight.corrections < 5) updated.smoothHands++;
   else updated.smoothHands = 0;
 
-  // pinpoint: landed in top 2 rings
+  // pinpoint: landed in top 2 rings (ring 4 or 5)
   if (flight.landingRing >= 4) updated.pinpoint++;
   else updated.pinpoint = 0;
 
-  // softTouch: touchdown speed well below limit
-  const vyRatio = Math.abs(flight.touchdownVyMs) / stats.touchdownLimits.maxVyMs;
+  // softTouch: touchdown speed well below limit (< 50% of maxVyMs)
+  const maxVy = Math.max(0.1, stats.touchdownLimits.maxVyMs);
+  const vyRatio = Math.abs(flight.touchdownVyMs) / maxVy;
   if (vyRatio < 0.5) updated.softTouch++;
   else updated.softTouch = 0;
 
@@ -61,5 +66,19 @@ export function updateStreaks(
   if (stats.costM < contract.budgetCapM * 0.7) updated.frugal++;
   else updated.frugal = 0;
 
-  return { streaks: updated, safetyNets, multiplier: computeMultiplier(updated) };
+  return { streaks: updated, safetyNets, multiplier: computeStreakMultiplier(updated) };
+}
+
+/**
+ * Purchase a streak safety net using agency funds if affordable.
+ */
+export function buySafetyNet(save: SaveGame): SaveGame {
+  if (save.fundsM < SAFETY_NET_COST_M) {
+    return save;
+  }
+  return {
+    ...save,
+    fundsM: round(save.fundsM - SAFETY_NET_COST_M, 2),
+    safetyNets: save.safetyNets + 1,
+  };
 }
