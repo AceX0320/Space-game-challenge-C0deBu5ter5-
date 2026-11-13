@@ -1,0 +1,61 @@
+[
+  {
+    "id": "moon",
+    "name": "Moon",
+    "source": "nasa",
+    "gravityMs2": 1.62,
+    "atmosphere": null,
+    "baseLifetimeS": 86400,
+    "solarFlux": 1.0,
+    "note": "Gravity: NASA Planetary Fact Sheet. No atmosphere. Pure powered descent required."
+  },
+  {
+    "id": "mars",
+    "name": "Mars",
+    "source": "nasa",
+    "gravityMs2": 3.72,
+    "atmosphere": {
+      "surfaceDensityKgM3": 0.02,
+      "scaleHeightM": 11100
+    },
+    "baseLifetimeS": 259200,
+    "solarFlux": 0.43,
+    "note": "Gravity: NASA Planetary Fact Sheet. Very thin CO2 atmosphere — parachute helps but powered descent still needed."
+  },
+  {
+    "id": "titan",
+    "name": "Titan",
+    "source": "nasa",
+    "gravityMs2": 1.35,
+    "atmosphere": {
+      "surfaceDensityKgM3": 5.3,
+      "scaleHeightM": 40000
+    },
+    "baseLifetimeS": 604800,
+    "solarFlux": 0.011,
+    "note": "Gravity: NASA Planetary Fact Sheet. Thick nitrogen atmosphere — parachute very effective. Low solar flux: RTG recommended."
+  },
+  {
+    "id": "venus",
+    "name": "Venus",
+    "source": "nasa",
+    "gravityMs2": 8.87,
+    "atmosphere": {
+      "surfaceDensityKgM3": 65.0,
+      "scaleHeightM": 15900
+    },
+    "baseLifetimeS": 3600,
+    "solarFlux": 1.9,
+    "note": "Gravity: NASA Planetary Fact Sheet. Extremely thick and hot CO2 atmosphere. Very short surface lifetime — heat shield critical."
+  },
+  {
+    "id": "asteroid",
+    "name": "Ryugu-class Asteroid",
+    "source": "game",
+    "gravityMs2": 0.003,
+    "atmosphere": null,
+    "baseLifetimeS": 172800,
+    "solarFlux": 1.2,
+    "note": "Gravity: game value representative of small C-type asteroid. Escape risk: very gentle touchdown required."
+  }
+]

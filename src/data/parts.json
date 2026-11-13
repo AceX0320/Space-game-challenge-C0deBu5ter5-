@@ -1,0 +1,305 @@
+[
+  {
+    "id": "engine-merlin-class",
+    "name": "Merlin-class Engine",
+    "category": "engine",
+    "source": "game",
+    "description": "A reliable medium-thrust engine. Good balance of thrust and efficiency for most missions.",
+    "baseMassKg": 500,
+    "baseCostM": 8,
+    "basePowerW": 200,
+    "baseWearPerMission": 8,
+    "params": [
+      { "key": "count", "label": "Engine Count", "min": 1, "max": 4, "step": 1, "default": 1, "unit": "", "explain": "More engines = more thrust and redundancy, but heavier and more expensive. Wear multiplied by count." },
+      { "key": "thrustScale", "label": "Thrust Scale", "min": 0.5, "max": 2.0, "step": 0.1, "default": 1.0, "unit": "×", "explain": "Scales thrust and fuel flow. Higher thrust improves TWR but burns fuel faster." },
+      { "key": "ispScale", "label": "Efficiency (Isp)", "min": 0.7, "max": 1.3, "step": 0.05, "default": 1.0, "unit": "×", "explain": "Higher efficiency = more Δv from same fuel. But high-efficiency engines usually have lower thrust." },
+      { "key": "gimbalDeg", "label": "Gimbal Range", "min": 0, "max": 15, "step": 1, "default": 5, "unit": "°", "explain": "Wider gimbal gives better steering during powered flight. Adds complexity and slight wear." }
+    ],
+    "stats": { "thrustN": 450000, "ispS": 282, "gimbalDeg": 5 }
+  },
+  {
+    "id": "engine-draco-class",
+    "name": "Draco-class Engine",
+    "category": "engine",
+    "source": "game",
+    "description": "A small, high-efficiency engine. Excellent for low-gravity bodies and precision manoeuvres.",
+    "baseMassKg": 150,
+    "baseCostM": 4,
+    "basePowerW": 80,
+    "baseWearPerMission": 5,
+    "params": [
+      { "key": "count", "label": "Engine Count", "min": 1, "max": 8, "step": 1, "default": 4, "unit": "", "explain": "More Draco engines increase thrust and redundancy at low individual weight." },
+      { "key": "thrustScale", "label": "Thrust Scale", "min": 0.5, "max": 1.5, "step": 0.1, "default": 1.0, "unit": "×", "explain": "Scales thrust output. Draco engines are low-thrust by design — best for precision, not hovering on heavy planets." },
+      { "key": "ispScale", "label": "Efficiency (Isp)", "min": 0.8, "max": 1.2, "step": 0.05, "default": 1.0, "unit": "×", "explain": "High base efficiency makes these engines fuel-efficient. Slight scaling room." },
+      { "key": "gimbalDeg", "label": "Gimbal Range", "min": 0, "max": 8, "step": 1, "default": 3, "unit": "°", "explain": "Limited gimbal; RCS handles most attitude control for this engine class." }
+    ],
+    "stats": { "thrustN": 60000, "ispS": 310, "gimbalDeg": 3 }
+  },
+  {
+    "id": "tank-standard",
+    "name": "Standard Propellant Tank",
+    "category": "tank",
+    "source": "game",
+    "description": "A cylindrical aluminium propellant tank. Reliable workhorse for most missions.",
+    "baseMassKg": 200,
+    "baseCostM": 2,
+    "basePowerW": 0,
+    "baseWearPerMission": 2,
+    "params": [
+      { "key": "volume", "label": "Tank Volume", "min": 0.5, "max": 4.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger volume = more fuel = more Δv, but heavier dry mass and higher cost. The rocket equation makes this non-linear." },
+      { "key": "pressurised", "label": "Pressurised", "min": 0, "max": 1, "step": 1, "default": 0, "unit": "", "explain": "Pressurised tanks feed engines more reliably at high altitude. Adds mass and cost." }
+    ],
+    "stats": { "fuelCapacityKg": 2000 }
+  },
+  {
+    "id": "tank-lightweight",
+    "name": "Lightweight Composite Tank",
+    "category": "tank",
+    "source": "game",
+    "description": "Carbon-composite tank. Lower dry mass penalty but costs more and wears faster.",
+    "baseMassKg": 100,
+    "baseCostM": 5,
+    "basePowerW": 0,
+    "baseWearPerMission": 4,
+    "params": [
+      { "key": "volume", "label": "Tank Volume", "min": 0.5, "max": 3.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Same fuel at lower structural mass. Great for Δv-limited missions." }
+    ],
+    "stats": { "fuelCapacityKg": 1500 }
+  },
+  {
+    "id": "rcs-standard",
+    "name": "RCS Thruster Block",
+    "category": "rcs",
+    "source": "game",
+    "description": "Cold-gas attitude control thrusters. Handles fine manoeuvring and tilt correction.",
+    "baseMassKg": 30,
+    "baseCostM": 1,
+    "basePowerW": 20,
+    "baseWearPerMission": 3,
+    "params": [
+      { "key": "count", "label": "Thruster Count", "min": 2, "max": 8, "step": 2, "default": 4, "unit": "", "explain": "More RCS thrusters = better attitude control and corrections, but adds mass and fuel use." },
+      { "key": "strength", "label": "Thruster Strength", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Stronger RCS snaps to orientation faster. Important on windy or rotating descent." }
+    ],
+    "stats": { "rcsThrustN": 2000 }
+  },
+  {
+    "id": "leg-standard",
+    "name": "Standard Landing Leg",
+    "category": "leg",
+    "source": "game",
+    "description": "Four-leg aluminium landing system. Decent stability, moderate mass.",
+    "baseMassKg": 120,
+    "baseCostM": 1.5,
+    "basePowerW": 0,
+    "baseWearPerMission": 6,
+    "params": [
+      { "key": "count", "label": "Leg Count", "min": 3, "max": 4, "step": 1, "default": 4, "unit": "", "explain": "4 legs are more stable than 3. 3 legs save mass. Both meet the minimum." },
+      { "key": "length", "label": "Leg Length", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Longer legs allow landing on rougher terrain and tolerate more tilt. Heavier." },
+      { "key": "footpadWidth", "label": "Footpad Width", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Wider footpads spread load over soft regolith. Wider = less sinking risk." },
+      { "key": "shockAbsorption", "label": "Shock Absorber", "min": 0.5, "max": 2.0, "step": 0.25, "default": 1.0, "unit": "×", "explain": "Stiffer absorbers tolerate harder touchdowns but transmit more force to the hull on rough landings." }
+    ],
+    "stats": { "legLengthM": 1.5, "footpadM": 0.4, "shockStiffness": 1.0 }
+  },
+  {
+    "id": "leg-wide-stance",
+    "name": "Wide-Stance Landing Leg",
+    "category": "leg",
+    "source": "game",
+    "description": "Wider, heavier legs for slope tolerance and rough terrain. Used on Mars and Titan missions.",
+    "baseMassKg": 200,
+    "baseCostM": 3,
+    "basePowerW": 0,
+    "baseWearPerMission": 5,
+    "params": [
+      { "key": "count", "label": "Leg Count", "min": 3, "max": 4, "step": 1, "default": 4, "unit": "", "explain": "More legs for more stability on soft or uneven ground." },
+      { "key": "length", "label": "Leg Length", "min": 1.0, "max": 3.0, "step": 0.5, "default": 2.0, "unit": "×", "explain": "Wide-stance legs are already long; extending further improves slope tolerance." },
+      { "key": "shockAbsorption", "label": "Shock Absorber", "min": 1.0, "max": 3.0, "step": 0.5, "default": 1.5, "unit": "×", "explain": "High shock absorption lets you land harder without damaging the hull or instruments." }
+    ],
+    "stats": { "legLengthM": 2.5, "footpadM": 0.8, "shockStiffness": 1.5 }
+  },
+  {
+    "id": "hull-standard",
+    "name": "Standard Spacecraft Bus",
+    "category": "hull",
+    "source": "game",
+    "description": "A basic aluminium spacecraft structure. Reliable and cheap.",
+    "baseMassKg": 300,
+    "baseCostM": 3,
+    "basePowerW": 0,
+    "baseWearPerMission": 1,
+    "params": [
+      { "key": "size", "label": "Bus Size", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger bus provides more mounting points and structural strength, but adds mass." },
+      { "key": "material", "label": "Material Grade", "min": 1, "max": 3, "step": 1, "default": 1, "unit": "", "explain": "Higher grade = stronger, lighter, pricier alloy. Grade 3 is aerospace titanium." }
+    ],
+    "stats": { "structureStrength": 1.0 }
+  },
+  {
+    "id": "power-solar",
+    "name": "Solar Panel Array",
+    "category": "power",
+    "source": "game",
+    "description": "Deployable solar panels. Light and free energy — but output depends on distance from the Sun.",
+    "baseMassKg": 50,
+    "baseCostM": 2,
+    "basePowerW": -400,
+    "baseWearPerMission": 3,
+    "params": [
+      { "key": "area", "label": "Panel Area", "min": 0.5, "max": 4.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "More area = more power generated. Power scales with area and solar flux of the target body." },
+      { "key": "efficiency", "label": "Cell Efficiency", "min": 0.8, "max": 1.5, "step": 0.1, "default": 1.0, "unit": "×", "explain": "Higher-efficiency cells cost more but generate more power per unit area." }
+    ],
+    "stats": { "solarAreaM2": 10 }
+  },
+  {
+    "id": "power-battery",
+    "name": "Battery Pack",
+    "category": "power",
+    "source": "game",
+    "description": "Lithium-ion battery pack. Stores power for night-side or shadow operations.",
+    "baseMassKg": 80,
+    "baseCostM": 1.5,
+    "basePowerW": 0,
+    "baseWearPerMission": 4,
+    "params": [
+      { "key": "capacity", "label": "Battery Capacity", "min": 0.5, "max": 4.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "More capacity = longer survival in shadow. Heavy. Needed on Titan (low solar flux) or for long nights." },
+      { "key": "cells", "label": "Cell Banks", "min": 1, "max": 3, "step": 1, "default": 1, "unit": "", "explain": "Multiple banks provide redundancy — one failure leaves others intact." }
+    ],
+    "stats": { "batteryWh": 500 }
+  },
+  {
+    "id": "comms-low-gain",
+    "name": "Low-Gain Antenna",
+    "category": "comms",
+    "source": "game",
+    "description": "Omnidirectional antenna. Low data rate but always pointed at Earth.",
+    "baseMassKg": 10,
+    "baseCostM": 0.5,
+    "basePowerW": 20,
+    "baseWearPerMission": 1,
+    "params": [
+      { "key": "size", "label": "Antenna Size", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger antenna = more signal gain = higher data rate. Mass and cost scale with size." }
+    ],
+    "stats": { "downlinkKbps": 10, "antennaGainDb": 6 }
+  },
+  {
+    "id": "comms-high-gain",
+    "name": "High-Gain Dish Antenna",
+    "category": "comms",
+    "source": "game",
+    "description": "Directional dish antenna. High data rate for science-heavy missions. Must be pointed at Earth.",
+    "baseMassKg": 40,
+    "baseCostM": 3,
+    "basePowerW": 80,
+    "baseWearPerMission": 3,
+    "params": [
+      { "key": "size", "label": "Dish Size", "min": 0.5, "max": 3.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger dish = higher data rate. Critical for missions with high science data volume." },
+      { "key": "tracking", "label": "Tracking Speed", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Faster tracking keeps the dish pointed at Earth through the mission. Faster = more power." }
+    ],
+    "stats": { "downlinkKbps": 200, "antennaGainDb": 30 }
+  },
+  {
+    "id": "computer-basic",
+    "name": "Basic Flight Computer",
+    "category": "computer",
+    "source": "game",
+    "description": "Entry-level flight computer. Provides basic stabilisation. No fancy autopilot.",
+    "baseMassKg": 20,
+    "baseCostM": 2,
+    "basePowerW": 50,
+    "baseWearPerMission": 1,
+    "params": [
+      { "key": "tier", "label": "Computer Tier", "min": 1, "max": 3, "step": 1, "default": 1, "unit": "", "explain": "Tier 1 = basic stabilisation. Tier 2 = autonomous correction. Tier 3 = full autopilot assist. Higher tier = more power and cost." }
+    ],
+    "stats": { "assistLevel": 1 }
+  },
+  {
+    "id": "instrument-camera",
+    "name": "Wide-Angle Camera",
+    "category": "instrument",
+    "source": "game",
+    "description": "Visible-light imager. Captures surface geology and landing area images.",
+    "baseMassKg": 15,
+    "baseCostM": 1.5,
+    "basePowerW": 30,
+    "baseWearPerMission": 1,
+    "params": [
+      { "key": "resolution", "label": "Resolution", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Higher resolution = better science images but more data per photo. Balance with antenna capacity." }
+    ],
+    "stats": { "instrumentKind": "camera", "dataRateKbps": 50, "scienceValue": 20 }
+  },
+  {
+    "id": "instrument-spectrometer",
+    "name": "Mass Spectrometer",
+    "category": "instrument",
+    "source": "game",
+    "description": "Identifies chemical composition of atmosphere and surface samples. Required for mineral surveys.",
+    "baseMassKg": 25,
+    "baseCostM": 4,
+    "basePowerW": 60,
+    "baseWearPerMission": 3,
+    "params": [
+      { "key": "sensitivity", "label": "Sensitivity", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Higher sensitivity detects trace compounds. Required to identify perchlorate salts or organic molecules." }
+    ],
+    "stats": { "instrumentKind": "spectrometer", "dataRateKbps": 20, "scienceValue": 40 }
+  },
+  {
+    "id": "instrument-drill",
+    "name": "Percussive Drill",
+    "category": "instrument",
+    "source": "game",
+    "description": "Extracts subsurface samples. Required to find subsurface ice and buried minerals.",
+    "baseMassKg": 50,
+    "baseCostM": 6,
+    "basePowerW": 150,
+    "baseWearPerMission": 8,
+    "params": [
+      { "key": "depth", "label": "Max Drill Depth", "min": 0.5, "max": 3.0, "step": 0.5, "default": 1.0, "unit": "m", "explain": "Deeper drill reaches richer subsurface samples. Heavier mechanism, more power, faster wear." }
+    ],
+    "stats": { "instrumentKind": "drill", "dataRateKbps": 5, "scienceValue": 60 }
+  },
+  {
+    "id": "instrument-seismometer",
+    "name": "Broadband Seismometer",
+    "category": "instrument",
+    "source": "game",
+    "description": "Measures ground vibrations. Required for interior structure mapping missions. Must be deployed gently.",
+    "baseMassKg": 20,
+    "baseCostM": 5,
+    "basePowerW": 10,
+    "baseWearPerMission": 2,
+    "params": [
+      { "key": "bandwidth", "label": "Frequency Range", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Wider frequency range captures more types of seismic events. More data, more science value." }
+    ],
+    "stats": { "instrumentKind": "seismometer", "dataRateKbps": 2, "scienceValue": 50 }
+  },
+  {
+    "id": "heatshield-standard",
+    "name": "Ablative Heat Shield",
+    "category": "heatshield",
+    "source": "game",
+    "description": "PICA-style ablative heat shield. Single-use. Required for entry into thick atmospheres.",
+    "baseMassKg": 300,
+    "baseCostM": 4,
+    "basePowerW": 0,
+    "baseWearPerMission": 100,
+    "params": [
+      { "key": "size", "label": "Shield Size", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger shield handles hotter entries (Venus, fast Mars entry). Heavier." },
+      { "key": "thickness", "label": "Ablator Thickness", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Thicker ablator survives more heating. Required for Venus. Adds mass." }
+    ],
+    "stats": { "heatCapacityMJ": 500, "dragAreaM2": 20, "singleUse": true }
+  },
+  {
+    "id": "parachute-standard",
+    "name": "Supersonic Parachute",
+    "category": "parachute",
+    "source": "game",
+    "description": "Disk-gap-band parachute. Single-use. Effective in Mars and Titan atmospheres.",
+    "baseMassKg": 80,
+    "baseCostM": 1,
+    "basePowerW": 0,
+    "baseWearPerMission": 100,
+    "params": [
+      { "key": "size", "label": "Parachute Diameter", "min": 0.5, "max": 2.0, "step": 0.5, "default": 1.0, "unit": "×", "explain": "Larger parachute creates more drag, slows descent more. Very effective on Titan's thick atmosphere. Single-use." }
+    ],
+    "stats": { "dragAreaM2": 50, "singleUse": true }
+  }
+]

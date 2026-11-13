@@ -1,0 +1,8 @@
+/src/sim/       @owner-1
+/src/builder/   @owner-2
+/src/economy/   @owner-3
+/src/data/      @owner-4
+/src/ui/        @owner-5
+/src/state/     @owner-6
+/src/report/    @owner-6
+/docs/          @owner-6

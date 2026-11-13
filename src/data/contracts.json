@@ -1,0 +1,85 @@
+[
+  {
+    "id": "first-light",
+    "title": "First Light",
+    "bodyId": "moon",
+    "objective": "Soft-land a camera on the lunar surface and transmit surface images back to Earth.",
+    "requiredInstruments": ["camera"],
+    "budgetCapM": 50,
+    "rewardM": 60,
+    "fundingGateM": 70,
+    "unlocksContractId": "eyes-on-mars",
+    "bonusObjectives": [
+      { "id": "bullseye", "text": "Land within the innermost ring", "extraRewardM": 10 }
+    ]
+  },
+  {
+    "id": "eyes-on-mars",
+    "title": "Eyes on Mars",
+    "bodyId": "mars",
+    "objective": "Land a camera and spectrometer on Mars and transmit surface composition data.",
+    "requiredInstruments": ["camera", "spectrometer"],
+    "budgetCapM": 80,
+    "rewardM": 100,
+    "fundingGateM": 120,
+    "unlocksContractId": "listen-to-the-moon",
+    "bonusObjectives": [
+      { "id": "subsurface", "text": "Deploy a drill and find a subsurface sample", "extraRewardM": 20 }
+    ]
+  },
+  {
+    "id": "listen-to-the-moon",
+    "title": "Listen to the Moon",
+    "bodyId": "moon",
+    "objective": "Deploy a seismometer on the lunar surface and downlink at least 24 hours of data.",
+    "requiredInstruments": ["seismometer"],
+    "budgetCapM": 70,
+    "rewardM": 90,
+    "fundingGateM": 180,
+    "unlocksContractId": "titan-descent",
+    "bonusObjectives": [
+      { "id": "icefind", "text": "Also find water ice with a drill", "extraRewardM": 15 }
+    ]
+  },
+  {
+    "id": "titan-descent",
+    "title": "Titan Descent",
+    "bodyId": "titan",
+    "objective": "Survive atmospheric entry and land instruments on Titan's surface. Collect hydrocarbon samples.",
+    "requiredInstruments": ["spectrometer", "camera"],
+    "budgetCapM": 120,
+    "rewardM": 160,
+    "fundingGateM": 280,
+    "unlocksContractId": "hot-neighbour",
+    "bonusObjectives": [
+      { "id": "organics", "text": "Detect complex organic compounds", "extraRewardM": 30 }
+    ]
+  },
+  {
+    "id": "hot-neighbour",
+    "title": "Hot Neighbour",
+    "bodyId": "venus",
+    "objective": "Survive Venus entry and operate instruments for at least 30 minutes on the surface.",
+    "requiredInstruments": ["spectrometer"],
+    "budgetCapM": 150,
+    "rewardM": 200,
+    "fundingGateM": 400,
+    "unlocksContractId": "tiny-world",
+    "bonusObjectives": [
+      { "id": "atm-sample", "text": "Transmit atmospheric composition data during descent", "extraRewardM": 40 }
+    ]
+  },
+  {
+    "id": "tiny-world",
+    "title": "Tiny World",
+    "bodyId": "asteroid",
+    "objective": "Touch down gently on a low-gravity asteroid and collect carbon-rich surface samples.",
+    "requiredInstruments": ["spectrometer", "drill"],
+    "budgetCapM": 100,
+    "rewardM": 150,
+    "fundingGateM": 999999,
+    "bonusObjectives": [
+      { "id": "metals", "text": "Identify metallic core material", "extraRewardM": 50 }
+    ]
+  }
+]

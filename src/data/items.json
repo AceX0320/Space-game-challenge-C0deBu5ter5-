@@ -1,0 +1,100 @@
+[
+  {
+    "id": "regolith-sample",
+    "name": "Lunar Regolith Sample",
+    "bodyIds": ["moon"],
+    "requiresInstrument": ["camera"],
+    "dataMB": 5,
+    "scienceValue": 15,
+    "source": "nasa",
+    "researchNodeId": "materials-alloys"
+  },
+  {
+    "id": "water-ice",
+    "name": "Water Ice (Polar)",
+    "bodyIds": ["moon"],
+    "requiresInstrument": ["drill"],
+    "dataMB": 10,
+    "scienceValue": 40,
+    "source": "nasa",
+    "researchNodeId": "science-astrobiology"
+  },
+  {
+    "id": "iron-rich-rock",
+    "name": "Iron-Rich Basalt",
+    "bodyIds": ["mars"],
+    "requiresInstrument": ["spectrometer"],
+    "dataMB": 8,
+    "scienceValue": 25,
+    "source": "nasa"
+  },
+  {
+    "id": "perchlorate-salts",
+    "name": "Perchlorate Salts",
+    "bodyIds": ["mars"],
+    "requiresInstrument": ["spectrometer"],
+    "dataMB": 6,
+    "scienceValue": 30,
+    "source": "nasa",
+    "researchNodeId": "science-astrobiology"
+  },
+  {
+    "id": "subsurface-ice",
+    "name": "Martian Subsurface Ice",
+    "bodyIds": ["mars"],
+    "requiresInstrument": ["drill"],
+    "dataMB": 12,
+    "scienceValue": 50,
+    "source": "nasa",
+    "researchNodeId": "power-rtg"
+  },
+  {
+    "id": "hydrocarbons",
+    "name": "Titan Hydrocarbons",
+    "bodyIds": ["titan"],
+    "requiresInstrument": ["spectrometer"],
+    "dataMB": 15,
+    "scienceValue": 45,
+    "source": "nasa",
+    "researchNodeId": "science-astrobiology"
+  },
+  {
+    "id": "titan-ice",
+    "name": "Titan Water-Ammonia Ice",
+    "bodyIds": ["titan"],
+    "requiresInstrument": ["drill"],
+    "dataMB": 10,
+    "scienceValue": 35,
+    "source": "nasa"
+  },
+  {
+    "id": "rare-minerals-venus",
+    "name": "Rare Sulphide Minerals",
+    "bodyIds": ["venus"],
+    "requiresInstrument": ["spectrometer"],
+    "dataMB": 20,
+    "scienceValue": 70,
+    "source": "game",
+    "researchNodeId": "materials-alloys"
+  },
+  {
+    "id": "carbon-asteroid",
+    "name": "Carbon-Rich Chondrite",
+    "bodyIds": ["asteroid"],
+    "requiresInstrument": ["spectrometer"],
+    "dataMB": 8,
+    "scienceValue": 35,
+    "source": "nasa",
+    "researchNodeId": "materials-alloys"
+  },
+  {
+    "id": "titan-microbial",
+    "name": "Possible Microbial Biosignature",
+    "bodyIds": ["titan"],
+    "requiresInstrument": ["spectrometer", "drill"],
+    "dataMB": 50,
+    "scienceValue": 200,
+    "source": "fictional",
+    "researchNodeId": "science-astrobiology"
+  }
+]

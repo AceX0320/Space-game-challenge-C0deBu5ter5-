@@ -1,0 +1,90 @@
+[
+  {
+    "id": "propulsion-isp",
+    "name": "High-Efficiency Propellants",
+    "branch": "propulsion",
+    "costM": 20,
+    "requiresItems": [{ "itemId": "iron-rich-rock", "quantity": 2 }],
+    "requiresNodes": [],
+    "unlocksPartIds": ["engine-draco-class"],
+    "description": "Research into higher-energy propellants unlocks the efficient Draco-class engine.",
+    "source": "game"
+  },
+  {
+    "id": "propulsion-gimbal",
+    "name": "Advanced Gimbal Control",
+    "branch": "propulsion",
+    "costM": 15,
+    "requiresItems": [],
+    "requiresNodes": ["propulsion-isp"],
+    "unlocksPartIds": [],
+    "description": "Better TVC control systems improve landing precision. Unlocks extended gimbal range upgrade.",
+    "source": "game"
+  },
+  {
+    "id": "materials-alloys",
+    "name": "Lightweight Alloys",
+    "branch": "materials",
+    "costM": 25,
+    "requiresItems": [{ "itemId": "regolith-sample", "quantity": 3 }, { "itemId": "carbon-asteroid", "quantity": 1 }],
+    "requiresNodes": [],
+    "unlocksPartIds": ["tank-lightweight"],
+    "description": "Extraterrestrial material analysis leads to improved lightweight composite alloys.",
+    "source": "game"
+  },
+  {
+    "id": "materials-heat",
+    "name": "Advanced Thermal Protection",
+    "branch": "materials",
+    "costM": 30,
+    "requiresItems": [{ "itemId": "rare-minerals-venus", "quantity": 1 }],
+    "requiresNodes": ["materials-alloys"],
+    "unlocksPartIds": [],
+    "description": "Venus mineral analysis inspires next-gen heat shield materials. Reduces heat shield mass.",
+    "source": "game"
+  },
+  {
+    "id": "power-solar-cells",
+    "name": "High-Efficiency Solar Cells",
+    "branch": "power",
+    "costM": 18,
+    "requiresItems": [],
+    "requiresNodes": [],
+    "unlocksPartIds": [],
+    "description": "Better photovoltaic cells produce more power per unit area, reducing panel mass.",
+    "source": "game"
+  },
+  {
+    "id": "power-rtg",
+    "name": "Radioisotope Power System",
+    "branch": "power",
+    "costM": 50,
+    "requiresItems": [{ "itemId": "subsurface-ice", "quantity": 1 }],
+    "requiresNodes": ["power-solar-cells"],
+    "unlocksPartIds": [],
+    "description": "RTG provides constant power regardless of solar flux. Essential for Titan and asteroid missions.",
+    "source": "game"
+  },
+  {
+    "id": "science-spectrometry",
+    "name": "Advanced Spectrometry",
+    "branch": "science",
+    "costM": 20,
+    "requiresItems": [{ "itemId": "perchlorate-salts", "quantity": 1 }],
+    "requiresNodes": [],
+    "unlocksPartIds": [],
+    "description": "Mars findings improve spectrometer sensitivity, allowing detection of trace organics.",
+    "source": "game"
+  },
+  {
+    "id": "science-astrobiology",
+    "name": "Astrobiology Package",
+    "branch": "science",
+    "costM": 60,
+    "requiresItems": [{ "itemId": "water-ice", "quantity": 1 }, { "itemId": "hydrocarbons", "quantity": 1 }],
+    "requiresNodes": ["science-spectrometry"],
+    "unlocksPartIds": [],
+    "description": "Combined water and hydrocarbon evidence opens astrobiology contracts and new instruments.",
+    "source": "game"
+  }
+]
