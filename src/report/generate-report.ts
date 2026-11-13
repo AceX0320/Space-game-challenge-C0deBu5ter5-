@@ -129,13 +129,14 @@ export function generateReport(
       severity: 'critical',
       text: `Peak heating (${maxHeat.toFixed(1)} MJ) exceeded the heat shield capacity of ${heatCap.toFixed(1)} MJ. The spacecraft disintegrated during atmospheric entry/descent.`,
     });
-    suggestions.push('Add a heavier heat shield or reduce entry velocity via a higher apoapsis approach.');
+    suggestions.push(
+      'Add a heavier heat shield or reduce entry velocity via a higher apoapsis approach.'
+    );
   }
 
   // — Priority 2: touchdown speed / tilt —
   if (flight.outcome === 'crash' || flight.outcome === 'rough') {
-    const speedOver =
-      Math.abs(flight.touchdownVyMs) > stats.touchdownLimits.maxVyMs;
+    const speedOver = Math.abs(flight.touchdownVyMs) > stats.touchdownLimits.maxVyMs;
     const tiltOver = flight.touchdownTiltDeg > stats.touchdownLimits.maxTiltDeg;
 
     if (speedOver) {
@@ -145,9 +146,13 @@ export function generateReport(
         text: `Vertical speed at touchdown (${Math.abs(flight.touchdownVyMs).toFixed(1)} m/s) exceeded the leg structural limit of ${stats.touchdownLimits.maxVyMs} m/s.`,
       });
       if (tooLowTWR) {
-        suggestions.push('Add stronger engines or reduce ship mass to improve TWR for terminal braking.');
+        suggestions.push(
+          'Add stronger engines or reduce ship mass to improve TWR for terminal braking.'
+        );
       } else {
-        suggestions.push('Install stiffer shock absorbers or add more propellant for a wider terminal-descent margin.');
+        suggestions.push(
+          'Install stiffer shock absorbers or add more propellant for a wider terminal-descent margin.'
+        );
       }
       nasaTag = 'speed';
     }
@@ -157,7 +162,9 @@ export function generateReport(
         severity: flight.outcome === 'crash' ? 'critical' : 'warning',
         text: `Landing tilt (${flight.touchdownTiltDeg.toFixed(1)}°) exceeded the ${stats.touchdownLimits.maxTiltDeg}° stability limit — the spacecraft tipped over.`,
       });
-      suggestions.push('Use wider-stance or longer landing legs, or add more RCS authority to hold attitude at touchdown.');
+      suggestions.push(
+        'Use wider-stance or longer landing legs, or add more RCS authority to hold attitude at touchdown.'
+      );
       if (nasaTag === null) nasaTag = 'tilt';
     }
 
@@ -171,137 +178,142 @@ export function generateReport(
     }
   }
 
-      // Successful landing acknowledgement (soft)
-      if (flight.outcome === 'soft' && causes.filter((c) => c.severity === 'critical').length === 0) {
-        // Only add success item when no burn-up was flagged
-        if (maxHeat === undefined || heatCap === undefined || maxHeat <= heatCap) {
-          causes.push({
-            severity: 'good',
-            text: `Touchdown speed (${Math.abs(flight.touchdownVyMs).toFixed(1)} m/s) was within the ${stats.touchdownLimits.maxVyMs} m/s leg limit — textbook landing.`,
-          });
-          nasaTag = 'parachute'; // show a successful-landing NASA mission
-        }
-      }
-
-      // — Priority 3: fuel margin —
-      const fuelPct = stats.fuelMassKg > 0 ? flight.fuelLeftKg / stats.fuelMassKg : 1;
-      if (fuelPct < 0.05 && flight.outcome !== 'crash') {
-        causes.push({
-          severity: 'warning',
-          text: `Only ${(fuelPct * 100).toFixed(1)}% propellant remained after landing — razor-thin margin.`,
-        });
-        suggestions.push('Add a larger propellant tank or switch to a higher-Isp engine to widen your Δv reserve.');
-      }
-
-      // -------------------------------------------------------------------------
-      // 3. Surface / scavenge checks (skip entirely when scavenge is null)
-      // -------------------------------------------------------------------------
-      if (scavenge !== null) {
-        // — Priority 4: power loss —
-        if (scavenge.endedBy === 'power') {
-          causes.push({
-            severity: 'warning',
-            text: `Surface power was exhausted after ${scavenge.timeUsedS.toFixed(0)} s, cutting scientific operations short.`,
-          });
-          const fluxNote =
-            body !== undefined ? ` Solar irradiance at ${body.name} is ${body.solarFlux.toFixed(2)} W/m².` : '';
-          suggestions.push(
-            `Add larger solar arrays or a battery pack with higher Wh capacity.${fluxNote} Consider an RTG for low-flux bodies.`
-          );
-          if (nasaTag === null) nasaTag = 'power';
-        }
-
-        // — Priority 5: data —
-        const dataLoss = scavenge.dataGeneratedMB - scavenge.dataSentMB;
-        if (dataLoss > 0.1) {
-          causes.push({
-            severity: 'warning',
-            text: `${dataLoss.toFixed(1)} MB of science data was generated but never transmitted (sent ${scavenge.dataSentMB.toFixed(1)} / ${scavenge.dataGeneratedMB.toFixed(1)} MB).`,
-          });
-          if (scavenge.endedBy === 'data-full') {
-            suggestions.push('Equip a high-gain dish antenna or upgrade data buffer storage to avoid buffer overflow.');
-            if (nasaTag === null) nasaTag = 'comms';
-          } else {
-            suggestions.push('Increase downlink bandwidth or allow more surface time to transmit buffered data.');
-            if (nasaTag === null) nasaTag = 'comms';
-          }
-        } else {
-          causes.push({
-            severity: 'good',
-            text: `Downlinked ${scavenge.dataSentMB.toFixed(1)} MB of scientific findings — full data return achieved.`,
-          });
-        }
-      } else {
-        // No surface operations
-        if (flight.outcome === 'soft' || flight.outcome === 'rough') {
-          causes.push({
-            severity: 'info',
-            text: 'No surface science was collected on this mission.',
-          });
-        }
-      }
-
-      // -------------------------------------------------------------------------
-      // 4. Financial summary (read from payout — never recompute)
-      // -------------------------------------------------------------------------
-      if (payout.netM >= 0) {
-        causes.push({
-          severity: 'good',
-          text: `Net mission profit: +\$${payout.netM.toFixed(1)} M (gross \$${payout.grossRewardM.toFixed(1)} M − costs \$${(payout.buildCostM + payout.launchCostM + payout.repairCostM).toFixed(1)} M).`,
-        });
-      } else {
-        causes.push({
-          severity: 'warning',
-          text: `Mission ran at a net loss of \$${Math.abs(payout.netM).toFixed(1)} M (gross reward \$${payout.grossRewardM.toFixed(1)} M was outweighed by build/launch/repair costs).`,
-        });
-        suggestions.push('Trim excess fuel or downscale non-essential components to cut build cost.');
-      }
-
-      // -------------------------------------------------------------------------
-      // 5. Headline refinement for data/scavenge partial success
-      // -------------------------------------------------------------------------
-      if (
-        headline.startsWith('Soft landing') &&
-        scavenge !== null &&
-        scavenge.dataSentMB < scavenge.dataGeneratedMB - 0.1
-      ) {
-        headline = 'Soft landing, science data partly lost';
-      }
-      if (flight.outcome === 'abort') {
-        headline = 'Mission aborted';
-        if (!causes.some((c) => c.severity === 'critical')) {
-          causes.push({
-            severity: 'critical',
-            text: 'Flight was aborted due to system depletion or premature termination sequence.',
-          });
-          suggestions.push('Review power balance and ensure batteries cover all eclipse phases.');
-        }
-      }
-
-      // -------------------------------------------------------------------------
-      // 6. NASA analogue (may be null — no reference when none fits)
-      // -------------------------------------------------------------------------
-      const ref = nasaRef(nasaTag);
-      const similarRealMission = ref ? `${ref.mission} — ${ref.note}` : undefined;
-
-      // -------------------------------------------------------------------------
-      // 7. Timeline: merge and sort by tS ascending
-      // -------------------------------------------------------------------------
-      const rawTimeline: MissionEvent[] = [
-        ...flight.events,
-        ...(scavenge?.events ?? []),
-      ];
-      const timeline = rawTimeline
-        .slice()
-        .sort((a, b) => a.tS - b.tS)
-        .map((ev) => ({ ...ev, text: `${formatT(ev.tS)} — ${ev.text}` }));
-
-      return {
-        headline,
-        outcome: flight.outcome,
-        causes,
-        suggestions,
-        timeline,
-        similarRealMission,
-      };
+  // Successful landing acknowledgement (soft)
+  if (flight.outcome === 'soft' && causes.filter((c) => c.severity === 'critical').length === 0) {
+    // Only add success item when no burn-up was flagged
+    if (maxHeat === undefined || heatCap === undefined || maxHeat <= heatCap) {
+      causes.push({
+        severity: 'good',
+        text: `Touchdown speed (${Math.abs(flight.touchdownVyMs).toFixed(1)} m/s) was within the ${stats.touchdownLimits.maxVyMs} m/s leg limit — textbook landing.`,
+      });
+      nasaTag = 'parachute'; // show a successful-landing NASA mission
     }
+  }
+
+  // — Priority 3: fuel margin —
+  const fuelPct = stats.fuelMassKg > 0 ? flight.fuelLeftKg / stats.fuelMassKg : 1;
+  if (fuelPct < 0.05 && flight.outcome !== 'crash') {
+    causes.push({
+      severity: 'warning',
+      text: `Only ${(fuelPct * 100).toFixed(1)}% propellant remained after landing — razor-thin margin.`,
+    });
+    suggestions.push(
+      'Add a larger propellant tank or switch to a higher-Isp engine to widen your Δv reserve.'
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. Surface / scavenge checks (skip entirely when scavenge is null)
+  // -------------------------------------------------------------------------
+  if (scavenge !== null) {
+    // — Priority 4: power loss —
+    if (scavenge.endedBy === 'power') {
+      causes.push({
+        severity: 'warning',
+        text: `Surface power was exhausted after ${scavenge.timeUsedS.toFixed(0)} s, cutting scientific operations short.`,
+      });
+      const fluxNote =
+        body !== undefined
+          ? ` Solar irradiance at ${body.name} is ${body.solarFlux.toFixed(2)} W/m².`
+          : '';
+      suggestions.push(
+        `Add larger solar arrays or a battery pack with higher Wh capacity.${fluxNote} Consider an RTG for low-flux bodies.`
+      );
+      if (nasaTag === null) nasaTag = 'power';
+    }
+
+    // — Priority 5: data —
+    const dataLoss = scavenge.dataGeneratedMB - scavenge.dataSentMB;
+    if (dataLoss > 0.1) {
+      causes.push({
+        severity: 'warning',
+        text: `${dataLoss.toFixed(1)} MB of science data was generated but never transmitted (sent ${scavenge.dataSentMB.toFixed(1)} / ${scavenge.dataGeneratedMB.toFixed(1)} MB).`,
+      });
+      if (scavenge.endedBy === 'data-full') {
+        suggestions.push(
+          'Equip a high-gain dish antenna or upgrade data buffer storage to avoid buffer overflow.'
+        );
+        if (nasaTag === null) nasaTag = 'comms';
+      } else {
+        suggestions.push(
+          'Increase downlink bandwidth or allow more surface time to transmit buffered data.'
+        );
+        if (nasaTag === null) nasaTag = 'comms';
+      }
+    } else {
+      causes.push({
+        severity: 'good',
+        text: `Downlinked ${scavenge.dataSentMB.toFixed(1)} MB of scientific findings — full data return achieved.`,
+      });
+    }
+  } else {
+    // No surface operations
+    if (flight.outcome === 'soft' || flight.outcome === 'rough') {
+      causes.push({
+        severity: 'info',
+        text: 'No surface science was collected on this mission.',
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 4. Financial summary (read from payout — never recompute)
+  // -------------------------------------------------------------------------
+  if (payout.netM >= 0) {
+    causes.push({
+      severity: 'good',
+      text: `Net mission profit: +\$${payout.netM.toFixed(1)} M (gross \$${payout.grossRewardM.toFixed(1)} M − costs \$${(payout.buildCostM + payout.launchCostM + payout.repairCostM).toFixed(1)} M).`,
+    });
+  } else {
+    causes.push({
+      severity: 'warning',
+      text: `Mission ran at a net loss of \$${Math.abs(payout.netM).toFixed(1)} M (gross reward \$${payout.grossRewardM.toFixed(1)} M was outweighed by build/launch/repair costs).`,
+    });
+    suggestions.push('Trim excess fuel or downscale non-essential components to cut build cost.');
+  }
+
+  // -------------------------------------------------------------------------
+  // 5. Headline refinement for data/scavenge partial success
+  // -------------------------------------------------------------------------
+  if (
+    headline.startsWith('Soft landing') &&
+    scavenge !== null &&
+    scavenge.dataSentMB < scavenge.dataGeneratedMB - 0.1
+  ) {
+    headline = 'Soft landing, science data partly lost';
+  }
+  if (flight.outcome === 'abort') {
+    headline = 'Mission aborted';
+    if (!causes.some((c) => c.severity === 'critical')) {
+      causes.push({
+        severity: 'critical',
+        text: 'Flight was aborted due to system depletion or premature termination sequence.',
+      });
+      suggestions.push('Review power balance and ensure batteries cover all eclipse phases.');
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 6. NASA analogue (may be null — no reference when none fits)
+  // -------------------------------------------------------------------------
+  const ref = nasaRef(nasaTag);
+  const similarRealMission = ref ? `${ref.mission} — ${ref.note}` : undefined;
+
+  // -------------------------------------------------------------------------
+  // 7. Timeline: merge and sort by tS ascending
+  // -------------------------------------------------------------------------
+  const rawTimeline: MissionEvent[] = [...flight.events, ...(scavenge?.events ?? [])];
+  const timeline = rawTimeline
+    .slice()
+    .sort((a, b) => a.tS - b.tS)
+    .map((ev) => ({ ...ev, text: `${formatT(ev.tS)} — ${ev.text}` }));
+
+  return {
+    headline,
+    outcome: flight.outcome,
+    causes,
+    suggestions,
+    timeline,
+    similarRealMission,
+  };
+}

@@ -1,0 +1,11 @@
+export const G = 6.6743e-11; // gravitational constant, m³·kg⁻¹·s⁻²
+export const AU = 1.495978707e11; // astronomical unit, m
+export const EARTH_RADIUS = 6.371e6; // m
+export const EARTH_MASS = 5.972e24; // kg
+export const MOON_RADIUS = 1.737e6; // m
+export const MOON_MASS = 7.342e22; // kg
+export const MARS_RADIUS = 3.39e6; // m
+export const MARS_MASS = 6.417e23; // kg
+export const TITAN_RADIUS = 2.574e6; // m
+export const VENUS_RADIUS = 6.052e6; // m
+export const DEFAULT_DENSITY = 5514; // kg/m³

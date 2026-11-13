@@ -34,4 +34,3 @@ describe('Data Validation & Flow Integration', () => {
     expect(state.payout?.score.total).toBeGreaterThan(0);
   });
 });
-

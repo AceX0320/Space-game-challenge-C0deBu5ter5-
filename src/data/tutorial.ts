@@ -8,7 +8,15 @@
  * TODO(owner-5): add data-tutorial="<id>" attributes to hangar.ts, flight.ts, and preflight.ts.
  */
 
-import type { Body, Contract, Difficulty, GamePhase, PartDef, ShipDesign, ShipStats } from '@/types';
+import type {
+  Body,
+  Contract,
+  Difficulty,
+  GamePhase,
+  PartDef,
+  ShipDesign,
+  ShipStats,
+} from '@/types';
 import { getDifficultySettings } from '@/config/constants';
 
 // ===========================================================================
@@ -41,7 +49,8 @@ export const STAT_TOOLTIPS: Record<string, StatTooltip> = {
     explanation:
       'Must be greater than 1.0 to lift off. At exactly 1.0 your engines only cancel gravity — you hover but do not climb.',
     // VERIFY: Saturn V liftoff TWR ~1.16 (Apollo 11, 11 July 1969, as-built mass sheets)
-    nasaFact: 'The Apollo Saturn V rocket had a liftoff TWR of approximately 1.16, meaning it left the pad very slowly.',
+    nasaFact:
+      'The Apollo Saturn V rocket had a liftoff TWR of approximately 1.16, meaning it left the pad very slowly.',
     source: 'nasa',
   },
   powerBalance: {
@@ -53,7 +62,7 @@ export const STAT_TOOLTIPS: Record<string, StatTooltip> = {
   deltaV: {
     label: 'Delta-v (Δv)',
     explanation:
-      "The total velocity change your ship can perform — think of it as your absolute range.",
+      'The total velocity change your ship can perform — think of it as your absolute range.',
     // VERIFY: LEO Δv ~9,400 m/s (varies 9,100–9,800 m/s depending on trajectory and losses)
     nasaFact: 'Getting into low Earth orbit requires roughly 9,400 m/s of Δv.',
     source: 'nasa',
@@ -129,11 +138,7 @@ export function getLockReason(part: PartDef, body: Body): string | null {
   }
 
   // solarAreaM2 being defined signals this is a solar-panel-type power part
-  if (
-    part.category === 'power' &&
-    part.stats.solarAreaM2 !== undefined &&
-    body.solarFlux < 0.4
-  ) {
+  if (part.category === 'power' && part.stats.solarAreaM2 !== undefined && body.solarFlux < 0.4) {
     // VERIFY: Mars average solar flux ~586 W/m², Jupiter ~50 W/m² (solarFlux in our Body type
     // stores W/m² at 1 AU then scaled; threshold 0.4 covers past Mars, consistent with bodies.json)
     return 'Incompatible: Solar irradiance is too low past Mars. These panels cannot generate enough power here. Consider an RTG.';
@@ -164,13 +169,13 @@ export const ONBOARDING_SCRIPT: OnboardingStep[] = [
     phase: 'hangar',
     targetUI: 'contract-brief',
     message:
-      "Welcome to Launchsmith. Your first contract is a simple Moon landing. Notice the budget and mass limits in the top right — you cannot exceed these.",
+      'Welcome to Launchsmith. Your first contract is a simple Moon landing. Notice the budget and mass limits in the top right — you cannot exceed these.',
   },
   {
     phase: 'hangar',
     targetUI: 'parts-menu',
     message:
-      "Pick a Chemical Thruster, a Fuel Tank, and Basic Landing Legs from the parts panel. Use the sliders to tune their parameters. Watch your Thrust-to-Weight Ratio turn green.",
+      'Pick a Chemical Thruster, a Fuel Tank, and Basic Landing Legs from the parts panel. Use the sliders to tune their parameters. Watch your Thrust-to-Weight Ratio turn green.',
   },
   {
     phase: 'flight',
@@ -182,7 +187,7 @@ export const ONBOARDING_SCRIPT: OnboardingStep[] = [
     phase: 'flight',
     targetUI: 'throttle-slider',
     message:
-      "The Moon has no atmosphere, so parachutes will not help. Use your throttle to slow your vertical speed below your leg tolerance before you hit the bullseye.",
+      'The Moon has no atmosphere, so parachutes will not help. Use your throttle to slow your vertical speed below your leg tolerance before you hit the bullseye.',
   },
 ];
 
@@ -236,4 +241,3 @@ export const GAMEPLAY_GUIDE: GuideEntry[] = [
       'In multiplayer, the Director sets strategy and signs off on the design, the Engineer owns ship assembly, the Science officer selects instruments and interprets results, and Operations controls the throttle during landing. Each role can flag concerns before launch.',
   },
 ];
-

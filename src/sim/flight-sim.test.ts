@@ -3,7 +3,10 @@ import { classifyTouchdown, ringForDistance } from './landing';
 import { atmosphericDensity, dragForce } from './atmosphere';
 import { rollMalfunctions } from './malfunctions';
 import { createFlightSim, autoFly } from './flight-sim';
-import type { ShipStats, Body, Difficulty } from '@/types';
+import { computePayout } from '@/economy/payout';
+import { simulateScavenge } from '@/economy/scavenge';
+import { generateReport } from '@/report/generate-report';
+import type { ShipStats, Body, Difficulty, Contract, SaveGame, MissionResult } from '@/types';
 
 const mockLimits = { maxVyMs: 6, maxVxMs: 3, maxTiltDeg: 15 };
 
@@ -63,12 +66,12 @@ describe('rollMalfunctions', () => {
   });
 });
 
-describe('createFlightSim + autoFly', () => {
-  const mockStats: ShipStats = {
+describe('createFlightSim + autoFly Integration Tests', () => {
+  const moonShipStats: ShipStats = {
     totalMassKg: 1000,
     dryMassKg: 500,
     fuelMassKg: 500,
-    deltaVms: 2000,
+    deltaVms: 2500,
     thrustN: 15000,
     twr: 1.5,
     powerGenW: 400,
@@ -85,6 +88,7 @@ describe('createFlightSim + autoFly', () => {
     valid: true,
     violations: [],
   };
+
   const moonBody: Body = {
     id: 'moon',
     name: 'Moon',
@@ -95,16 +99,135 @@ describe('createFlightSim + autoFly', () => {
     solarFlux: 1.0,
   };
 
-  it('autoFly completes without crashing (moon, normal)', () => {
-    const sim = createFlightSim(mockStats, moonBody, 'normal', 42);
-    const result = autoFly(sim);
-    expect(result.outcome).toMatch(/soft|rough|crash/);
-    expect(result.landingRing).toBeGreaterThanOrEqual(0);
+  it('1. Determinism: same stats, body, difficulty, and seed produce identical FlightResult twice', () => {
+    const sim1 = createFlightSim(moonShipStats, moonBody, 'normal', 12345);
+    const result1 = autoFly(sim1);
+
+    const sim2 = createFlightSim(moonShipStats, moonBody, 'normal', 12345);
+    const result2 = autoFly(sim2);
+
+    expect(result1.outcome).toBe(result2.outcome);
+    expect(result1.landingRing).toBe(result2.landingRing);
+    expect(result1.distanceFromTargetM).toBeCloseTo(result2.distanceFromTargetM, 4);
+    expect(result1.touchdownVyMs).toBeCloseTo(result2.touchdownVyMs, 4);
+    expect(result1.touchdownVxMs).toBeCloseTo(result2.touchdownVxMs, 4);
+    expect(result1.fuelLeftKg).toBeCloseTo(result2.fuelLeftKg, 4);
   });
 
-  it('isDone() is true after autoFly', () => {
-    const sim = createFlightSim(mockStats, moonBody, 'normal', 42);
-    autoFly(sim);
+  it('2. A well-built Moon ship lands soft with autoFly', () => {
+    const sim = createFlightSim(moonShipStats, moonBody, 'normal', 42);
+    const result = autoFly(sim);
+
+    expect(result.outcome).toBe('soft');
     expect(sim.isDone()).toBe(true);
+    expect(Math.abs(result.touchdownVyMs)).toBeLessThanOrEqual(
+      moonShipStats.touchdownLimits.maxVyMs
+    );
+    expect(Math.abs(result.touchdownVxMs)).toBeLessThanOrEqual(
+      moonShipStats.touchdownLimits.maxVxMs
+    );
+  });
+
+  it('3. An underpowered ship (TWR below 1) crashes with autoFly', () => {
+    // Weight on Moon = 1000 kg * 1.62 m/s² = 1620 N
+    // Thrust = 500 N => TWR = 0.31 (far below 1)
+    const underpoweredStats: ShipStats = {
+      ...moonShipStats,
+      thrustN: 500,
+      twr: 0.31,
+    };
+
+    const sim = createFlightSim(underpoweredStats, moonBody, 'normal', 42);
+    const result = autoFly(sim);
+
+    expect(result.outcome).toBe('crash');
+    expect(Math.abs(result.touchdownVyMs)).toBeGreaterThan(
+      underpoweredStats.touchdownLimits.maxVyMs
+    );
+  });
+
+  it('4. FlightResult from real sim flows cleanly through computePayout and generateReport', () => {
+    const sim = createFlightSim(moonShipStats, moonBody, 'normal', 42);
+    const flightResult = autoFly(sim);
+
+    const mockContract: Contract = {
+      id: 'moon-landing-01',
+      title: 'First Light: Moon Landing',
+      bodyId: 'moon',
+      objective: 'Land softly on the Moon and deploy surface sensors.',
+      requiredInstruments: ['camera'],
+      budgetCapM: 60,
+      rewardM: 80,
+      fundingGateM: 100,
+    };
+
+    const mockSave: SaveGame = {
+      version: 1,
+      fundsM: 50,
+      difficulty: 'normal',
+      unlockedContractIds: ['moon-landing-01'],
+      completedContracts: {},
+      streaks: {
+        cleanAscent: 1,
+        smoothHands: 1,
+        pinpoint: 1,
+        softTouch: 1,
+        frugal: 1,
+      },
+      safetyNets: 0,
+      inventory: [],
+      researched: [],
+      ownedParts: [],
+      currentDesign: null,
+    };
+
+    const scavengeResult = simulateScavenge(
+      moonShipStats,
+      moonBody,
+      mockContract,
+      flightResult,
+      [
+        {
+          id: 'regolith',
+          name: 'Regolith Sample',
+          bodyIds: ['moon'],
+          requiresInstrument: ['camera'],
+          dataMB: 20,
+          scienceValue: 30,
+          source: 'nasa',
+        },
+      ],
+      'normal',
+      42
+    );
+
+    const missionResult: MissionResult = {
+      contractId: mockContract.id,
+      difficulty: 'normal',
+      flight: flightResult,
+      scavenge: scavengeResult,
+      partWearDelta: {},
+      malfunctions: [],
+    };
+
+    const payout = computePayout(mockContract, missionResult, moonShipStats, mockSave, 0);
+    expect(payout.grossRewardM).toBeGreaterThan(0);
+    expect(payout.netM).toBeDefined();
+
+    const report = generateReport(mockContract, moonShipStats, missionResult, payout);
+    expect(report.headline).toBeDefined();
+    expect(report.causes.length).toBeGreaterThanOrEqual(1);
+    expect(report.suggestions).toBeDefined();
+  });
+
+  it('5. Higher difficulty shrinks landing rings (same distance yields equal or lower ring)', () => {
+    const testDistanceM = 250;
+
+    const easyRing = ringForDistance(testDistanceM, 'easy');
+    const normalRing = ringForDistance(testDistanceM, 'normal');
+    const hardRing = ringForDistance(testDistanceM, 'hard');
+
+    expect(easyRing).toBeGreaterThanOrEqual(normalRing);
+    expect(normalRing).toBeGreaterThanOrEqual(hardRing);
   });
 });
