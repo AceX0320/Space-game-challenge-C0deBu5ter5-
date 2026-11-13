@@ -23,8 +23,7 @@ export function updateStreaks(
   safetyNets: number
 ): { streaks: SaveGame['streaks']; safetyNets: number; multiplier: number } {
   const { flight } = result;
-  const failed =
-    flight.outcome === 'crash' || flight.outcome === 'abort' || flight.fuelLeftKg <= 0;
+  const failed = flight.outcome === 'crash' || flight.outcome === 'abort' || flight.fuelLeftKg <= 0;
 
   if (failed) {
     if (safetyNets > 0) {

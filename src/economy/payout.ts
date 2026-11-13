@@ -1,9 +1,5 @@
 import type { Contract, MissionResult, PayoutResult, SaveGame, ShipStats } from '@/types';
-import {
-  RING_SCORES,
-  REPLAY_REWARD_FRACTION,
-  getDifficultySettings,
-} from '@/config/constants';
+import { RING_SCORES, REPLAY_REWARD_FRACTION, getDifficultySettings } from '@/config/constants';
 import { clamp, round } from '@/core/units';
 import { computeStreakMultiplier } from './streaks';
 

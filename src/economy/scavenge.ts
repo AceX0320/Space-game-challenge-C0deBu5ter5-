@@ -30,8 +30,7 @@ export function simulateScavenge(
   // Mission lifetime: base lifetime modified by power surplus and landing quality
   const powerSurplus = stats.powerGenW - stats.powerDrawW;
   const powerFactor = clamp(0.5 + powerSurplus / 1000, 0.3, 2.0);
-  const landingFactor =
-    flight.outcome === 'soft' ? 1.0 : flight.outcome === 'rough' ? 0.6 : 0;
+  const landingFactor = flight.outcome === 'soft' ? 1.0 : flight.outcome === 'rough' ? 0.6 : 0;
   const timeAvailableS = round(body.baseLifetimeS * powerFactor * landingFactor, 2);
 
   if (timeAvailableS <= 0 || flight.outcome === 'crash' || flight.outcome === 'abort') {

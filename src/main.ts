@@ -31,4 +31,3 @@ bootstrap().catch((err: unknown) => {
   console.error('Fatal initialization error:', err);
   document.body.innerHTML = `<pre style="color:red;padding:1rem;background:#1e1e1e">${String(err)}</pre>`;
 });
-
