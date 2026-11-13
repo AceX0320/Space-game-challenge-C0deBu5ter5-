@@ -99,4 +99,3 @@ export function renderRouter(appRoot: HTMLElement, state: GameState): void {
     <div>Commit Build: <strong>#setup-init (Hour 0–1 Scaffold)</strong> · Environment: <strong>Client-Only Static</strong></div>
   `;
 }
-

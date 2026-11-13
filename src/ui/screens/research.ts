@@ -100,4 +100,3 @@ export function renderResearch(root: HTMLElement, state: GameState): void {
     });
   });
 }
-
