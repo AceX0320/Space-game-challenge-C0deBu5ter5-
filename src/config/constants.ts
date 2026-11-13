@@ -1,6 +1,19 @@
 import type { Difficulty } from '@/types';
 
 export const G0_MS2 = 9.80665;
+export {
+  G,
+  AU,
+  EARTH_RADIUS,
+  EARTH_MASS,
+  MOON_RADIUS,
+  MOON_MASS,
+  MARS_RADIUS,
+  MARS_MASS,
+  TITAN_RADIUS,
+  VENUS_RADIUS,
+  DEFAULT_DENSITY,
+} from '@/sim/constants';
 
 export interface DifficultySettings {
   budgetModifier: number; // multiplies the contract budget cap
