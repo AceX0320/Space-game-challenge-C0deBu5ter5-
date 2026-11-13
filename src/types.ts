@@ -145,6 +145,7 @@ export interface FlightResult {
   ascentFuelUsedPct: number;
   corrections: number;
   events: MissionEvent[];
+  maxHeatMJ?: number;
 }
 
 export interface MissionEvent {
