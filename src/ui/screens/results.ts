@@ -44,7 +44,6 @@ export function renderResults(root: HTMLElement, state: GameState): void {
     // No result data — user jumped here directly (dev only)
     bodyEl.innerHTML = `
       <div style="margin:auto; text-align:center; color:var(--ls-text-dim);">
-        <div style="font-size:2rem; margin-bottom:var(--ls-sp-3)">📊</div>
         <div class="ls-micro" style="margin-bottom:var(--ls-sp-2)">No mission result available</div>
         <div style="font-size:var(--ls-size-xs)">Use the debug bar to run a mock mission first.</div>
       </div>`;
@@ -58,10 +57,9 @@ export function renderResults(root: HTMLElement, state: GameState): void {
   // Outcome banner
   const bannerColor = flightOutcome === 'soft' ? 'var(--ls-green)' : flightOutcome === 'rough' ? 'var(--ls-amber)' : 'var(--ls-red)';
   const banner = document.createElement('div');
-  banner.style.cssText = `border:1px solid ${bannerColor}; background:${bannerColor}18; border-radius:var(--ls-radius-md); padding:var(--ls-sp-4); display:flex; align-items:center; gap:var(--ls-sp-4);`;
+  banner.style.cssText = `border:1px solid ${bannerColor}; background:${bannerColor}18; border-radius:0; padding:var(--ls-sp-4); display:flex; align-items:center; gap:var(--ls-sp-4);`;
   banner.innerHTML = `
-    <div style="font-size:2.5rem">${flightOutcome === 'soft' ? '🎉' : flightOutcome === 'rough' ? '⚠️' : '💥'}</div>
-    <div style="flex:1">
+    <div style="border-left:4px solid ${bannerColor}; padding-left:var(--ls-sp-3); flex:1">
       <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-lg); font-weight:700; color:${bannerColor}; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px">
         ${outcomeLabel}
       </div>
@@ -194,7 +192,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
         ${report.suggestions.map(s => `<div class="ls-advisory info" style="margin-bottom:4px"><div class="ls-advisory-title">Recommendation</div>${s}</div>`).join('')}
         ${report.similarRealMission ? `
           <div style="font-size:var(--ls-size-xs); color:var(--ls-text-dim); border-top:1px solid var(--ls-border); padding-top:var(--ls-sp-2); margin-top:var(--ls-sp-2);">
-            🏛 Historical benchmark:<br><em style="color:var(--ls-text)">${report.similarRealMission}</em>
+            Historical benchmark:<br><em style="color:var(--ls-text)">${report.similarRealMission}</em>
           </div>` : ''}
       </div>
     `;

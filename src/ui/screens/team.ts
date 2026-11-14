@@ -27,30 +27,26 @@ export function renderTeam(root: HTMLElement, state: GameState): void {
   bodyEl.style.gap = 'var(--ls-sp-4)';
   bodyEl.style.overflowY = 'auto';
 
-  const roles: { role: TeamRole; title: string; caresAbout: string; icon: string }[] = [
+  const roles: { role: TeamRole; title: string; caresAbout: string }[] = [
     {
       role: 'director',
       title: 'Mission Director',
       caresAbout: 'Strategic budget cap, scientific goals, and Go/No-Go launch authority',
-      icon: '🎖️',
     },
     {
       role: 'engineer',
       title: 'Spacecraft Engineer',
       caresAbout: 'Structural mass, delta-V, thrust-to-weight, and landing gear stability',
-      icon: '🛠️',
     },
     {
       role: 'science',
       title: 'Science Lead',
       caresAbout: 'Instrument payload suite, sampling capabilities, and data volume',
-      icon: '🔬',
     },
     {
       role: 'operations',
       title: 'Operations Lead',
       caresAbout: 'Power balance in shadow, downlink throughput, and part wear/reliability',
-      icon: '📡',
     },
   ];
 
@@ -66,7 +62,7 @@ export function renderTeam(root: HTMLElement, state: GameState): void {
 
     card.innerHTML = `
       <div class="ls-panel-header">
-        <span class="ls-panel-title">${r.icon} ${r.title}</span>
+        <span class="ls-panel-title">${r.title}</span>
         ${isCurrent ? '<span class="ls-chip ls-chip-orange">ACTIVE</span>' : ''}
       </div>
       <div class="ls-panel-body" style="display:flex; flex-direction:column; justify-content:space-between; min-height:120px;">
@@ -100,7 +96,7 @@ export function renderTeam(root: HTMLElement, state: GameState): void {
                   <div class="ls-advisory ${f.resolved ? 'ok' : f.acceptedAsRisk ? '' : 'error'}" style="margin-bottom:6px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
                       <span class="ls-advisory-title">[${f.role.toUpperCase()}]</span>
-                      <span class="ls-micro" style="color:var(--ls-text)">${f.resolved ? '✓ Resolved' : f.acceptedAsRisk ? '⚠️ Risk Accepted' : '🚩 Open Concern'}</span>
+                      <span class="ls-micro" style="color:var(--ls-text)">${f.resolved ? 'Resolved' : f.acceptedAsRisk ? 'Risk Accepted' : 'Open Concern'}</span>
                     </div>
                     <div style="font-size:var(--ls-size-xs)">${f.text}</div>
                   </div>

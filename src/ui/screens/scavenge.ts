@@ -71,45 +71,41 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
     {
       label: 'Deploy Instrument',
       detail: '12 Wh · 45 min cycle',
-      icon: '📡',
       disabled: false,
       disabledReason: '',
     },
     {
       label: 'Send Data',
       detail: '8 Wh · uplink queued',
-      icon: '📶',
       disabled: scavenge !== null && scavenge.dataSentMB >= scavenge.dataGeneratedMB,
       disabledReason: 'No buffered data to transmit',
     },
     {
       label: 'Collect Sample',
       detail: '6 Wh · robotic arm',
-      icon: '🦾',
       disabled: hasPartFailure,
       disabledReason: hasPartFailure ? 'Fault: actuator seal failure' : '',
     },
   ];
 
-  leftCol.innerHTML = `<div class="ls-micro" style="margin-bottom:var(--ls-sp-3)">Action Deck</div>`;
+  leftCol.innerHTML = `<div class="ls-micro" style="margin-bottom:var(--sp-3)">Action Deck</div>`;
   for (const action of actionItems) {
     const card = document.createElement('div');
     card.style.cssText = `
-      border:1px solid ${action.disabled ? 'var(--ls-border)' : 'var(--ls-border-mid)'};
-      border-radius:var(--ls-radius-md);
-      padding:var(--ls-sp-3);
-      margin-bottom:var(--ls-sp-2);
+      border:1px solid ${action.disabled ? 'var(--border)' : 'var(--border)'};
+      border-radius:0;
+      padding:var(--sp-3);
+      margin-bottom:var(--sp-2);
       opacity:${action.disabled ? '0.45' : '1'};
+      background:var(--bg-panel);
     `;
     card.innerHTML = `
-      <div style="display:flex; align-items:center; gap:var(--ls-sp-2); margin-bottom:4px;">
-        <span style="font-size:1.2rem">${action.icon}</span>
-        <span style="font-size:var(--ls-size-xs); font-weight:600; color:var(--ls-text)">${action.label}</span>
+      <div style="display:flex; align-items:center; gap:var(--sp-2); margin-bottom:4px;">
+        <span style="font-size:0.75rem; font-weight:600; color:var(--text)">${action.label}</span>
       </div>
-      <div style="font-size:0.65rem; color:var(--ls-text-dim); font-family:var(--ls-font-mono); margin-bottom:var(--ls-sp-2)">${action.detail}</div>
-      ${action.disabledReason ? `<div style="font-size:0.65rem; color:var(--ls-amber)">${action.disabledReason}</div>` : ''}
-      <button class="ls-btn" ${action.disabled ? 'disabled' : ''} style="width:100%; margin-top:var(--ls-sp-2); justify-content:center;"
-        onclick="console.log('${action.label} stub — TODO(owner-3)')">
+      <div style="font-size:0.65rem; color:var(--text-muted); font-family:var(--font-mono); margin-bottom:var(--sp-2)">${action.detail}</div>
+      ${action.disabledReason ? `<div style="font-size:0.65rem; color:var(--warn)">${action.disabledReason}</div>` : ''}
+      <button class="ls-btn" ${action.disabled ? 'disabled' : ''} style="width:100%; margin-top:var(--sp-2); justify-content:center;">
         ${action.label}
       </button>
     `;
@@ -160,17 +156,17 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
 
   // Radar canvas
   const radarPanel = document.createElement('div');
-  radarPanel.style.cssText = 'flex:1; display:flex; align-items:center; justify-content:center; padding:var(--ls-sp-4); position:relative;';
+  radarPanel.style.cssText = 'flex:1; display:flex; align-items:center; justify-content:center; padding:var(--sp-4); position:relative;';
 
   const canvas = document.createElement('canvas');
   canvas.width = 320;
   canvas.height = 320;
-  canvas.style.cssText = 'border-radius:50%; border:1px solid var(--ls-border); background:rgba(0,8,20,0.8);';
+  canvas.style.cssText = 'border-radius:50%; border:1px solid var(--border); background:#0e0e0f;';
   radarPanel.appendChild(canvas);
 
   // Coordinate readout above radar
   const coordEl = document.createElement('div');
-  coordEl.style.cssText = `position:absolute; top:var(--ls-sp-3); left:50%; transform:translateX(-50%); font-family:var(--ls-font-mono); font-size:var(--ls-size-xs); color:var(--ls-text-dim); white-space:nowrap;`;
+  coordEl.style.cssText = `position:absolute; top:var(--sp-3); left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:0.6875rem; color:var(--text-muted); white-space:nowrap;`;
   coordEl.textContent = `${body.name.toUpperCase()} · 00°00′N 00°00′E`;
   radarPanel.appendChild(coordEl);
 
@@ -178,8 +174,8 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
 
   // Event feed
   const feedEl = document.createElement('div');
-  feedEl.style.cssText = 'border-top:1px solid var(--ls-border); height:120px; overflow-y:auto; padding:var(--ls-sp-2) var(--ls-sp-3); flex-shrink:0;';
-  feedEl.innerHTML = `<div class="ls-micro" style="margin-bottom:4px">Surface Event Log</div><div id="scav-feed" style="font-size:var(--ls-size-xs); font-family:var(--ls-font-mono);"></div>`;
+  feedEl.style.cssText = 'border-top:1px solid var(--border); height:120px; overflow-y:auto; padding:var(--sp-2) var(--sp-3); flex-shrink:0;';
+  feedEl.innerHTML = `<div class="ls-micro" style="margin-bottom:4px">Surface Event Log</div><div id="scav-feed" style="font-size:0.6875rem; font-family:var(--font-mono);"></div>`;
   mainCol.appendChild(feedEl);
 
   bodyEl.appendChild(mainCol);
@@ -187,7 +183,7 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
   /* ── RIGHT: Surface meters ──────────────────────────── */
   const rightCol = document.createElement('div');
   rightCol.className = 'ls-col-right';
-  rightCol.style.padding = 'var(--ls-sp-3)';
+  rightCol.style.padding = 'var(--sp-3)';
 
   const batteryWh = stats.batteryWh;
   const powerGenW = stats.powerGenW;
@@ -199,10 +195,10 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
     : 0;
 
   rightCol.innerHTML = `
-    <div class="ls-micro" style="margin-bottom:var(--ls-sp-3)">Surface Meters</div>
+    <div class="ls-micro" style="margin-bottom:var(--sp-3)">Surface Meters</div>
 
     <!-- Battery -->
-    <div class="ls-panel" style="margin-bottom:var(--ls-sp-2)">
+    <div class="ls-panel" style="margin-bottom:var(--sp-2)">
       <div class="ls-panel-header"><span class="ls-panel-title">Power</span></div>
       <div class="ls-panel-body">
         <div class="ls-meter">
@@ -212,15 +208,15 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
           </div>
           <div class="ls-meter-track"><div class="ls-meter-fill ok" id="batt-fill" style="width:100%"></div></div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:var(--ls-size-xs); font-family:var(--ls-font-mono); color:var(--ls-text-dim); margin-top:4px">
-          <span>Solar gen: <span style="color:var(--ls-green)">${(powerGenW * body.solarFlux).toFixed(0)} W</span></span>
-          <span>Draw: <span style="color:var(--ls-text)">${stats.powerDrawW.toFixed(0)} W</span></span>
+        <div style="display:flex; justify-content:space-between; font-size:0.6875rem; font-family:var(--font-mono); color:var(--text-muted); margin-top:4px">
+          <span>Solar gen: <span style="color:var(--ok)">${(powerGenW * body.solarFlux).toFixed(0)} W</span></span>
+          <span>Draw: <span style="color:var(--text)">${stats.powerDrawW.toFixed(0)} W</span></span>
         </div>
       </div>
     </div>
 
     <!-- Data -->
-    <div class="ls-panel" style="margin-bottom:var(--ls-sp-2)">
+    <div class="ls-panel" style="margin-bottom:var(--sp-2)">
       <div class="ls-panel-header"><span class="ls-panel-title">Science Data</span></div>
       <div class="ls-panel-body">
         <div class="ls-meter">
@@ -228,21 +224,21 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
             <span class="ls-meter-label">Sent / Generated</span>
             <span class="ls-meter-value" id="data-val">${dataSentMB.toFixed(1)} / ${dataGenMB.toFixed(1)} MB</span>
           </div>
-          <div class="ls-meter-track two-tone" id="data-track" style="height:6px;">
+          <div class="ls-meter-track two-tone" id="data-track">
             <div class="seg-a" id="data-sent-bar" style="width:${dataGenMB > 0 ? (dataSentMB / dataGenMB * 100).toFixed(0) : 0}%; height:100%;"></div>
             <div class="seg-b" id="data-lost-bar" style="width:${dataGenMB > 0 ? (dataLostMB / dataGenMB * 100).toFixed(0) : 0}%; height:100%;"></div>
           </div>
         </div>
-        <div style="font-size:var(--ls-size-xs); color:var(--ls-amber); margin-top:4px; font-family:var(--ls-font-mono);">Lost: ${dataLostMB.toFixed(1)} MB</div>
+        <div style="font-size:0.6875rem; color:var(--warn); margin-top:4px; font-family:var(--font-mono);">Lost: ${dataLostMB.toFixed(1)} MB</div>
       </div>
     </div>
 
     <!-- Salvage -->
-    <div class="ls-panel" style="margin-bottom:var(--ls-sp-2)">
+    <div class="ls-panel" style="margin-bottom:var(--sp-2)">
       <div class="ls-panel-header"><span class="ls-panel-title">Salvage Value</span></div>
       <div class="ls-panel-body">
-        <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-lg); font-weight:700; color:var(--ls-green)">${formatM(salvageValue)}</div>
-        <div style="font-size:var(--ls-size-xs); color:var(--ls-text-dim); margin-top:4px">
+        <div style="font-family:var(--font-mono); font-size:1.125rem; font-weight:700; color:var(--ok)">${formatM(salvageValue)}</div>
+        <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:4px">
           ${scavenge?.itemsFound.length ?? 0} item(s) found · 1× survey bonus
         </div>
       </div>
@@ -253,29 +249,29 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
       <div class="ls-panel-header"><span class="ls-panel-title">Surface Conditions</span></div>
       <div class="ls-panel-body">
         ${[
-          ['Surface Temp', body.atmosphere ? 'Est. −60°C' : 'Est. −173°C', 'TODO(owner-4)'],
-          ['Solar Flux', `${(body.solarFlux * 1361).toFixed(0)} W/m²`, ''],
-          ['Comm Window', '—', 'TODO(owner-4)'],
-          ['Atm Pressure', body.atmosphere ? `${(body.atmosphere.surfaceDensityKgM3 * 8.314 * 220 / 0.044).toFixed(0)} Pa` : '0 Pa', ''],
-        ].map(([k, v, t]) => `
-          <div style="display:flex; justify-content:space-between; font-size:var(--ls-size-xs); padding:3px 0; border-bottom:1px solid var(--ls-border);">
-            <span style="color:var(--ls-text-micro); font-family:var(--ls-font-mono); text-transform:uppercase; letter-spacing:0.06em">${k}</span>
-            <span style="font-family:var(--ls-font-mono); color:${t ? 'var(--ls-text-micro)' : 'var(--ls-text)'};" title="${t}">${v}</span>
+          ['Surface Temp', body.tempRangeC ?? (body.atmosphere ? 'Est. −60°C' : 'Est. −173°C')],
+          ['Solar Flux', `${(body.solarFlux * 1361).toFixed(0)} W/m²`],
+          ['Comm Window', body.id === 'moon' ? 'Direct Earth LoS' : body.id === 'mars' ? 'Orbital Relay (DSN)' : 'Deep Space Relay'],
+          ['Atm Pressure', body.atmosphere ? `${(body.atmosphere.surfaceDensityKgM3 * 8.314 * 220 / 0.044).toFixed(0)} Pa` : '0 Pa'],
+        ].map(([k, v]) => `
+          <div style="display:flex; justify-content:space-between; font-size:0.6875rem; padding:3px 0; border-bottom:1px solid var(--border);">
+            <span style="color:var(--text-muted); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.06em">${k}</span>
+            <span style="font-family:var(--font-mono); color:var(--text);">${v}</span>
           </div>`).join('')}
       </div>
     </div>
 
     <!-- Items found list -->
-    <div style="margin-top:var(--ls-sp-3)">
-      <div class="ls-micro" style="margin-bottom:var(--ls-sp-2)">Items Found</div>
+    <div style="margin-top:var(--sp-3)">
+      <div class="ls-micro" style="margin-bottom:var(--sp-2)">Items Found</div>
       <div id="items-found">
         ${(scavenge?.itemsFound.length ?? 0) === 0
-          ? '<div style="color:var(--ls-text-micro); font-size:var(--ls-size-xs)">None yet…</div>'
+          ? '<div style="color:var(--text-muted); font-size:0.6875rem">None yet…</div>'
           : (scavenge?.itemsFound ?? []).map(it => `
-              <div style="border-left:2px solid var(--ls-green); padding:3px var(--ls-sp-2); margin-bottom:4px; font-size:var(--ls-size-xs); font-family:var(--ls-font-mono);">
-                <span style="color:var(--ls-text)">${it.itemId}</span> ×${it.quantity}
-                <span style="color:var(--ls-text-dim)"> T+${formatTime(it.tS)}</span>
-                ${it.transmitted ? '<span style="color:var(--ls-green)"> ✓</span>' : ''}
+              <div style="border-left:2px solid var(--ok); padding:3px var(--sp-2); margin-bottom:4px; font-size:0.6875rem; font-family:var(--font-mono);">
+                <span style="color:var(--text)">${it.itemId}</span> ×${it.quantity}
+                <span style="color:var(--text-muted)"> T+${formatTime(it.tS)}</span>
+                ${it.transmitted ? '<span style="color:var(--ok)"> [OK]</span>' : ''}
               </div>`).join('')}
       </div>
     </div>
@@ -292,7 +288,7 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
     const maxR = Math.min(W, H) / 2 - 4;
 
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(0,8,20,0.9)';
+    ctx.fillStyle = '#0e0e0f';
     ctx.fillRect(0, 0, W, H);
 
     // Range rings
@@ -301,11 +297,11 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
       const rPx = (r / 100) * maxR;
       ctx.beginPath();
       ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(58,142,246,0.2)';
+      ctx.strokeStyle = 'rgba(171, 137, 127, 0.25)';
       ctx.lineWidth = 1;
       ctx.stroke();
-      ctx.fillStyle = 'rgba(58,142,246,0.5)';
-      ctx.font = '9px monospace';
+      ctx.fillStyle = '#ab897f';
+      ctx.font = '9px "JetBrains Mono", monospace';
       ctx.fillText(`${r}m`, cx + rPx + 2, cy);
     }
 
@@ -315,27 +311,26 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
     ctx.translate(cx, cy);
     ctx.rotate(sweepAngle);
     const grad = ctx.createLinearGradient(0, 0, maxR, 0);
-    grad.addColorStop(0, 'rgba(255,90,31,0.6)');
+    grad.addColorStop(0, 'rgba(255,90,31,0.7)');
     grad.addColorStop(1, 'rgba(255,90,31,0)');
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(maxR, 0);
     ctx.strokeStyle = grad;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.restore();
 
     // Landed craft (centre)
     ctx.beginPath();
-    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-    ctx.fillStyle = 'var(--ls-orange)' ;
-    ctx.fillStyle = '#FF5A1F';
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff5a1f';
     ctx.fill();
-    ctx.font = '8px monospace';
-    ctx.fillStyle = '#FF5A1F';
+    ctx.font = '8px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#ff5a1f';
     ctx.fillText('LANDER', cx + 8, cy - 8);
 
-    // Item markers (TODO(owner-3): real positions)
+    // Item markers
     const items = scavenge?.itemsFound ?? [];
     for (const item of items) {
       const tFraction = totalS > 0 ? item.tS / totalS : 1;
@@ -346,16 +341,16 @@ export function renderScavenge(root: HTMLElement, state: GameState): void {
       const py = cy + (pos.y / 100) * maxR;
       ctx.beginPath();
       ctx.arc(px, py, 4, 0, Math.PI * 2);
-      ctx.fillStyle = '#1FA971';
+      ctx.fillStyle = '#61dda0';
       ctx.fill();
-      ctx.fillStyle = '#1FA971';
-      ctx.font = '7px monospace';
+      ctx.fillStyle = '#61dda0';
+      ctx.font = '7px "JetBrains Mono", monospace';
       ctx.fillText(item.itemId.substring(0, 6), px + 5, py);
     }
 
     // Scale bar
-    ctx.fillStyle = 'rgba(58,142,246,0.5)';
-    ctx.font = '8px monospace';
+    ctx.fillStyle = '#ab897f';
+    ctx.font = '8px "JetBrains Mono", monospace';
     ctx.fillText('0            50m          100m', 8, H - 8);
   }
 
