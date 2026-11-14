@@ -101,6 +101,8 @@ export interface ShipStats {
   valid: boolean;
   violations: string[];
   heatCapacityMJ?: number;
+  dragAreaM2?: number;
+  parachuteAreaM2?: number;
 }
 
 export interface AtmosphereSpec {

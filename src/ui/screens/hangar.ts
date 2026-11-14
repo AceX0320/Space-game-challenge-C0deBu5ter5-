@@ -37,6 +37,94 @@ function hashDesign(design: import('@/types').ShipDesign): string {
   return (h >>> 0).toString(16).substring(0, 6).toUpperCase();
 }
 
+function escapeSvg(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&apos;',
+  })[character] ?? character);
+}
+
+function renderCraftPreview(
+  design: import('@/types').ShipDesign,
+  catalog: ReturnType<typeof getParts>
+): string {
+  const parts = design.parts
+    .map((instance) => ({ instance, definition: catalog.find((part) => part.id === instance.partId) }))
+    .filter((entry): entry is { instance: PartInstance; definition: (typeof catalog)[number] } => Boolean(entry.definition));
+  const countFor = (category: PartCategory): number =>
+    parts
+      .filter(({ definition }) => definition.category === category)
+      .reduce((sum, { instance }) => sum + (instance.paramValues['count'] ?? 1), 0);
+  const tankVolume = parts
+    .filter(({ definition }) => definition.category === 'tank')
+    .reduce((sum, { instance }) => sum + (instance.paramValues['volume'] ?? 1), 0);
+  const tankHeight = Math.max(14, Math.min(72, 22 * tankVolume));
+  const engineCount = Math.max(0, Math.min(5, Math.round(countFor('engine'))));
+  const legCount = Math.max(0, Math.min(6, Math.round(countFor('leg'))));
+  const previewHeight = Math.max(240, 52 + parts.length * 17);
+  const rows = parts.map(({ instance, definition }, index) => {
+    const label = escapeSvg(definition.name.length > 19 ? `${definition.name.slice(0, 17)}…` : definition.name);
+    const tunedValues = Object.entries(instance.paramValues)
+      .filter(([, value]) => value !== 1)
+      .map(([key, value]) => `${key.toUpperCase()} ${value}`)
+      .join(' · ');
+    const category = escapeSvg(
+      `${definition.category.toUpperCase()}${tunedValues ? ` · ${tunedValues}` : ''}`
+    );
+    return `<g data-preview-part="true" data-part-id="${escapeSvg(definition.id)}" data-instance-id="${escapeSvg(instance.instanceId)}">
+      <rect x="190" y="${36 + index * 17}" width="122" height="15" rx="2" fill="#0b1729" stroke="#1e3a5f"/>
+      <circle cx="198" cy="${43 + index * 17}" r="2.5" fill="#38bdf8"/>
+      <text x="205" y="${42 + index * 17}" fill="#d9e7ff" font-size="7" font-family="monospace">${label}</text>
+      <text x="205" y="${49 + index * 17}" fill="#7185a3" font-size="5" font-family="monospace">${category}</text>
+    </g>`;
+  }).join('');
+
+  const engines = Array.from({ length: engineCount }, (_, index) => {
+    const x = 100 + (index - (engineCount - 1) / 2) * 10;
+    return `<path d="M${x - 4} 139 L${x - 3} 151 H${x + 3} L${x + 4} 139 Z" fill="#4a607a" stroke="#9bb0c9" stroke-width="1"/>
+      <path d="M${x - 3} 151 l-2 14 h10 l-2-14 z" fill="#ff7b32" stroke="#ffb26b" stroke-width="1"/>`;
+  }).join('');
+  const legs = Array.from({ length: Math.ceil(legCount / 2) }, (_, index) => {
+    const offset = 30 + index * 7;
+    return `<path d="M86 132 L${86 - offset} 158 M114 132 L${114 + offset} 158" stroke="#8fa7c5" stroke-width="2"/>
+      <path d="M${86 - offset - 4} 158 h8 M${114 + offset - 4} 158 h8" stroke="#8fa7c5" stroke-width="2"/>`;
+  }).join('');
+  const powerPanels = countFor('power') > 0
+    ? '<path d="M82 98 H52 V116 H82 M118 98 H148 V116 H118" fill="#123966" stroke="#4aa5ff" stroke-width="1.5"/><path d="M57 98 V116 M67 98 V116 M143 98 V116 M133 98 V116" stroke="#4aa5ff" stroke-width="0.6"/>'
+    : '';
+  const antenna = countFor('comms') > 0
+    ? '<path d="M100 48 V27 M95 31 Q100 23 105 31" fill="none" stroke="#61d6a5" stroke-width="1.5"/>'
+    : '';
+  const instruments = countFor('instrument') > 0
+    ? '<circle cx="100" cy="105" r="5" fill="#0b1729" stroke="#61d6a5" stroke-width="1.5"/><circle cx="100" cy="105" r="1.5" fill="#61d6a5"/>'
+    : '';
+  const hull = countFor('hull') > 0
+    ? '<path d="M87 101 Q87 94 100 92 Q113 94 113 101 V121 H87 Z" fill="#152b45" stroke="#62aaff" stroke-width="1.5"/>'
+    : '<path d="M90 100 H110 V121 H90 Z" fill="#111d30" stroke="#7285a0" stroke-width="1.5" stroke-dasharray="3 2"/>';
+  const tanks = tankHeight > 14
+    ? `<g data-preview-tank="true" data-tank-volume="${tankVolume.toFixed(2)}"><rect x="88" y="${90 - tankHeight}" width="24" height="${tankHeight}" rx="7" fill="#24354c" stroke="#93a9c5" stroke-width="1.5"/><path d="M90 ${96 - tankHeight} H110 M90 ${103 - tankHeight} H110" stroke="#637b99" stroke-width="1"/></g>`
+    : '';
+
+  return `<svg data-craft-preview="true" width="100%" height="${previewHeight}" viewBox="0 0 320 ${previewHeight}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeSvg(design.name)} spacecraft blueprint">
+    <defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="rgba(58,142,246,0.15)" stroke-width="0.5"/></pattern></defs>
+    <rect width="320" height="240" fill="url(#grid)"/>
+    ${antenna}
+    ${tanks}
+    ${hull}
+    ${instruments}
+    ${powerPanels}
+    ${legs}
+    ${engines}
+    <path d="M100 166 V184" stroke="#49617d" stroke-dasharray="2 3"/>
+    <text x="100" y="194" fill="#8ca3c1" font-size="7" font-family="monospace" text-anchor="middle">${escapeSvg(design.name.toUpperCase())}</text>
+    <text x="190" y="26" fill="#6c8cb5" font-size="7" font-family="monospace">LIVE HARDWARE PREVIEW</text>
+    ${rows || '<text x="190" y="48" fill="#7185a3" font-size="7" font-family="monospace">No parts installed</text>'}
+  </svg>`;
+}
+
 function statColor(val: number, ok: number, warn: number): string {
   if (val >= ok) return 'var(--ls-green)';
   if (val >= warn) return 'var(--ls-amber)';
@@ -164,35 +252,8 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
 
   // Blueprint ship drawing
   const blueprint = document.createElement('div');
-  blueprint.style.cssText = 'flex:1; display:flex; align-items:center; justify-content:center; background:rgba(0,8,20,0.6); border-bottom:1px solid var(--ls-border); min-height:200px; position:relative;';
-  blueprint.innerHTML = `
-    <svg width="160" height="220" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.7">
-      <!-- Blueprint grid -->
-      <defs>
-        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(58,142,246,0.15)" stroke-width="0.5"/>
-        </pattern>
-      </defs>
-      <rect width="160" height="220" fill="url(#grid)"/>
-      <!-- Lander body (schematic) -->
-      <rect x="55" y="40" width="50" height="60" rx="4" stroke="#3A8EF6" stroke-width="1" fill="rgba(58,142,246,0.08)"/>
-      <!-- Engine bell -->
-      <path d="M65 100 L55 130 M95 100 L105 130" stroke="#3A8EF6" stroke-width="1"/>
-      <ellipse cx="80" cy="130" rx="25" ry="8" stroke="#FF5A1F" stroke-width="1" fill="rgba(255,90,31,0.1)"/>
-      <!-- Legs -->
-      <line x1="55" y1="110" x2="30" y2="150" stroke="#3A8EF6" stroke-width="1"/>
-      <line x1="105" y1="110" x2="130" y2="150" stroke="#3A8EF6" stroke-width="1"/>
-      <line x1="30" y1="150" x2="20" y2="155" stroke="#3A8EF6" stroke-width="1.5"/>
-      <line x1="130" y1="150" x2="140" y2="155" stroke="#3A8EF6" stroke-width="1.5"/>
-      <!-- Antenna -->
-      <line x1="80" y1="40" x2="80" y2="10" stroke="#3A8EF6" stroke-width="1"/>
-      <circle cx="80" cy="8" r="3" stroke="#1FA971" stroke-width="1" fill="none"/>
-      <!-- Dimension lines -->
-      <line x1="40" y1="40" x2="40" y2="130" stroke="rgba(58,142,246,0.4)" stroke-width="0.5" stroke-dasharray="2 2"/>
-      <text x="22" y="88" fill="rgba(58,142,246,0.6)" font-size="7" font-family="monospace">H</text>
-    </svg>
-    <div style="position:absolute; top:8px; right:8px; font-family:var(--ls-font-mono); font-size:0.6rem; color:rgba(58,142,246,0.5)">2D BLUEPRINT · ${design.name}</div>
-  `;
+  blueprint.style.cssText = 'flex:1; display:flex; align-items:center; justify-content:center; overflow-y:auto; background:rgba(0,8,20,0.6); border-bottom:1px solid var(--ls-border); min-height:200px; max-height:420px; position:relative;';
+  blueprint.innerHTML = renderCraftPreview(design, catalog);
   mainCol.appendChild(blueprint);
 
   // Installed hardware rack
@@ -464,6 +525,7 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
     if (!inst) return;
     inst.paramValues = { ...inst.paramValues, [paramKey]: Number(slider.value) };
     getStore().update({ design });
+    blueprint.innerHTML = renderCraftPreview(design, catalog);
     updateRight();
   });
 }

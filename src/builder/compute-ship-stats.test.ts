@@ -61,6 +61,19 @@ const mockParts: PartDef[] = [
     ],
     stats: { fuelCapacityKg: 2000 },
   },
+  {
+    id: 'parachute-test',
+    name: 'Test Parachute',
+    category: 'parachute',
+    source: 'game',
+    description: 'Test',
+    baseMassKg: 80,
+    baseCostM: 1,
+    basePowerW: 0,
+    baseWearPerMission: 1,
+    params: [],
+    stats: { dragAreaM2: 50, singleUse: true },
+  },
 ];
 
 const mockDesign: ShipDesign = {
@@ -105,5 +118,25 @@ describe('computeShipStats', () => {
   it('returns empty violations for a valid design', () => {
     const stats = computeShipStats(mockDesign, mockParts, moonBody);
     expect(stats.violations).toEqual([]);
+  });
+
+  it('only adds parachute drag area when a parachute is installed', () => {
+    const withoutParachute = computeShipStats(mockDesign, mockParts, moonBody);
+    const withParachute = computeShipStats({
+      ...mockDesign,
+      parts: [
+        ...mockDesign.parts,
+        {
+          instanceId: 'p1',
+          partId: 'parachute-test',
+          paramValues: {},
+          condition: 100,
+          maxCondition: 100,
+        },
+      ],
+    }, mockParts, moonBody);
+
+    expect(withoutParachute.parachuteAreaM2).toBe(0);
+    expect(withParachute.parachuteAreaM2).toBe(50);
   });
 });

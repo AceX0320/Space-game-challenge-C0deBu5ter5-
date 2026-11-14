@@ -4,6 +4,8 @@
 
 Build your own spacecraft from tunable parts, fly it, land it on a bullseye, and live with the financial and mechanical consequences of every choice.
 
+In flight, launch from Earth with the throttle controls, follow the live route to your contract's destination, then steer and manage throttle for landing. Use **W / Space / ↑** to thrust, **A / ←** and **D / →** to steer, or use the on-screen hold controls and throttle slider.
+
 ## Quick Start
 
 ```bash

@@ -24,6 +24,7 @@ export interface FlightControls {
 
 export interface FlightState {
   phase: 'ascent' | 'transit' | 'descent' | 'landing' | 'landed' | 'crashed';
+  phaseProgress: number;
   tS: number;
   xM: number;
   yM: number;
@@ -44,6 +45,14 @@ export interface FlightSim {
 
 export { ringForDistance, scoreForRing, classifyTouchdown, rollMalfunctions };
 
+export const LAUNCH_TARGET_ALTITUDE_M = 12_000;
+export const TARGET_APPROACH_ALTITUDE_M = 1_000;
+
+const EARTH_GRAVITY_MS2 = 9.81;
+const MAX_ASCENT_DURATION_S = 120;
+const TRANSFER_DURATION_S = 8;
+const EARTH_ATMOSPHERE = { surfaceDensityKgM3: 1.225, scaleHeightM: 8_500 };
+
 /**
  * Create a flight simulation instance.
  * SI units throughout. Fully deterministic given a seed.
@@ -62,19 +71,17 @@ export function createFlightSim(
   const simBody = SimBody.fromGameBody(body, new Vec2(0, 0), stats.touchdownLimits);
   const surfaceG = body.gravityMs2 > 0 ? body.gravityMs2 : 1.62;
 
-  // Determine initial conditions
-  const startAltitude = 1000; // m
-  const startVy = -20; // m/s
-  const startVx = (rng() - 0.5) * 4; // slight horizontal drift ±2 m/s
-  const startX = (rng() - 0.5) * 50; // initial horizontal offset ±25 m
+  const approachVx = (rng() - 0.5) * 4;
+  const approachX = (rng() - 0.5) * 50;
 
   const state: FlightState = {
-    phase: 'descent',
+    phase: 'ascent',
+    phaseProgress: 0,
     tS: 0,
-    xM: startX,
-    yM: startAltitude,
-    vxMs: startVx,
-    vyMs: startVy,
+    xM: 0,
+    yM: 0,
+    vxMs: 0,
+    vyMs: 0,
     tiltDeg: 0,
     fuelKg: stats.fuelMassKg,
     throttle: 0,
@@ -85,6 +92,10 @@ export function createFlightSim(
   let fuelDepletedEventLogged = false;
   let correctionsCount = 0;
   let lastPitchCmd = 0;
+  let ascentElapsedS = 0;
+  let transitStartedAtS = 0;
+  let fuelAtTargetApproachKg: number | null = null;
+  const initialFuelKg = state.fuelKg;
 
   // Fuel burn rate from rocket equation (Isp ~ 300s default)
   let ispS = 300;
@@ -126,6 +137,36 @@ export function createFlightSim(
       }
 
       state.tS += dtS;
+
+      if (state.phase === 'transit') {
+        state.throttle = 0;
+        state.phaseProgress = Math.min(1, (state.tS - transitStartedAtS) / TRANSFER_DURATION_S);
+        if (state.phaseProgress >= 1) {
+          state.phase = 'descent';
+          state.phaseProgress = 0;
+          state.xM = approachX;
+          state.yM = TARGET_APPROACH_ALTITUDE_M;
+          state.vxMs = approachVx;
+          state.vyMs = -20;
+          state.tiltDeg = 0;
+          fuelAtTargetApproachKg = state.fuelKg;
+          events.push({
+            tS: state.tS,
+            kind: 'milestone',
+            text: `Transfer complete. Powered descent toward ${body.name} begins.`,
+          });
+        }
+        return { ...state };
+      }
+
+      const isAscent = state.phase === 'ascent';
+      const localGravity = isAscent ? EARTH_GRAVITY_MS2 : surfaceG;
+      const atmosphere = isAscent ? EARTH_ATMOSPHERE : body.atmosphere;
+      const parachuteDeployed =
+        !isAscent &&
+        controls.deployParachute &&
+        body.atmosphere !== null &&
+        (stats.parachuteAreaM2 ?? 0) > 0;
 
       // Track manual control corrections
       if (Math.abs(controls.pitchRate - lastPitchCmd) > 0.1) {
@@ -170,16 +211,19 @@ export function createFlightSim(
 
       // Forces: Gravity
       // Surface gravity acts downward (-y)
-      const gravForceY = -currentMass * surfaceG;
+      const gravForceY = -currentMass * localGravity;
 
       // Forces: Aerodynamics (Drag & Entry Heating)
       let dragForceX = 0;
       let dragForceY = 0;
       const speed = Math.sqrt(state.vxMs ** 2 + state.vyMs ** 2);
 
-      if (body.atmosphere && state.yM > 0) {
-        const density = atmosphericDensity(body.atmosphere, state.yM);
-        const dragArea = controls.deployParachute ? 45 : 6;
+      if (atmosphere && state.yM > 0) {
+        const density = atmosphericDensity(atmosphere, state.yM);
+        const dragArea = isAscent
+          ? 0.6
+          : Math.max(1, stats.dragAreaM2 ?? 6) +
+            (parachuteDeployed ? stats.parachuteAreaM2 ?? 0 : 0);
         const totalDrag = dragForce(density, speed, dragArea);
 
         if (speed > 1e-4) {
@@ -202,9 +246,46 @@ export function createFlightSim(
       state.xM += state.vxMs * dtS;
       state.yM += state.vyMs * dtS;
 
+      if (isAscent) {
+        ascentElapsedS += dtS;
+        if (state.yM <= 0) {
+          state.yM = 0;
+          state.vyMs = 0;
+        }
+        state.phaseProgress = Math.min(1, state.yM / LAUNCH_TARGET_ALTITUDE_M);
+
+        if (state.yM >= LAUNCH_TARGET_ALTITUDE_M) {
+          state.yM = LAUNCH_TARGET_ALTITUDE_M;
+          state.phase = 'transit';
+          state.phaseProgress = 0;
+          transitStartedAtS = state.tS;
+          fuelAtTargetApproachKg = state.fuelKg;
+          events.push({
+            tS: state.tS,
+            kind: 'milestone',
+            text: `Earth ascent complete at ${LAUNCH_TARGET_ALTITUDE_M.toLocaleString()} m. Transfer to ${body.name} started.`,
+          });
+        } else if (ascentElapsedS >= MAX_ASCENT_DURATION_S || state.fuelKg <= 0) {
+          state.phase = 'crashed';
+          events.push({
+            tS: state.tS,
+            kind: 'failure',
+            text: 'Launch failed before reaching the transfer altitude. Check thrust and propellant reserve.',
+          });
+        }
+        return { ...state };
+      }
+
+      state.phaseProgress = Math.max(
+        0,
+        Math.min(1, 1 - state.yM / TARGET_APPROACH_ALTITUDE_M)
+      );
+      if (state.yM < 50 && state.yM > 0) state.phase = 'landing';
+
       // Touchdown Detection
       if (state.yM <= 0) {
         state.yM = 0;
+        state.phaseProgress = 1;
 
         // Classify touchdown kinematics
         let outcome = classifyTouchdown(
@@ -252,10 +333,10 @@ export function createFlightSim(
       const distM = Math.abs(state.xM);
       const ring = ringForDistance(distM, difficulty);
 
-      let outcome: FlightOutcome = 'soft';
+      let outcome: FlightOutcome = 'crash';
       if (state.phase === 'crashed') {
         outcome = 'crash';
-      } else {
+      } else if (state.phase === 'landed') {
         outcome = classifyTouchdown(state.vyMs, state.vxMs, state.tiltDeg, stats.touchdownLimits);
       }
 
@@ -263,7 +344,10 @@ export function createFlightSim(
         outcome = 'crash';
       }
 
-      const ascentFuelUsedPct = 20;
+      const fuelAtAscentEndKg = fuelAtTargetApproachKg ?? state.fuelKg;
+      const ascentFuelUsedPct = initialFuelKg > 0
+        ? ((initialFuelKg - fuelAtAscentEndKg) / initialFuelKg) * 100
+        : 0;
 
       return {
         outcome,
@@ -297,6 +381,15 @@ export function autoFly(sim: FlightSim): FlightResult {
   while (!sim.isDone() && iterations < maxIterations) {
     iterations++;
     const s = sim.state;
+
+    if (s.phase === 'ascent') {
+      sim.step(dtS, { throttle: 1, pitchRate: 0, rcs: 0, deployParachute: false });
+      continue;
+    }
+    if (s.phase === 'transit') {
+      sim.step(dtS, { throttle: 0, pitchRate: 0, rcs: 0, deployParachute: false });
+      continue;
+    }
 
     // 1. Attitude stabilization: drive tilt towards 0 (strictly 0 near surface)
     let targetTilt = 0;
@@ -338,8 +431,7 @@ export function autoFly(sim: FlightSim): FlightResult {
 
   // Safety fallback if loop boundary hit
   if (!sim.isDone()) {
-    sim.state.yM = 0;
-    sim.state.phase = 'landed';
+    sim.state.phase = 'crashed';
   }
 
   return sim.result();
