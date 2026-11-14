@@ -10,12 +10,12 @@ export interface PartCardOptions {
 export function createPartCard(part: PartDef, opts: PartCardOptions = {}): HTMLElement {
   const card = document.createElement('div');
   card.style.cssText = `
-    border: 1px solid var(--ls-border);
-    border-radius: var(--ls-radius-sm);
-    padding: var(--ls-sp-2) var(--ls-sp-3);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: var(--sp-2) var(--sp-3);
     margin-bottom: 4px;
     opacity: ${opts.isLocked ? '0.45' : '1'};
-    background: var(--ls-panel);
+    background: var(--bg-panel);
   `;
 
   card.innerHTML = `

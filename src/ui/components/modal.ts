@@ -28,7 +28,7 @@ export function showModal(
   box.style.cssText = `
     max-width: 500px;
     width: 90%;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    border-radius: 0;
   `;
 
   const header = document.createElement('div');

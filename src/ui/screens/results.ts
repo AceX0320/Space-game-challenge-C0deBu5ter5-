@@ -44,7 +44,6 @@ export function renderResults(root: HTMLElement, state: GameState): void {
     // No result data — user jumped here directly (dev only)
     bodyEl.innerHTML = `
       <div style="margin:auto; text-align:center; color:var(--ls-text-dim);">
-        <div style="font-size:2rem; margin-bottom:var(--ls-sp-3)">📊</div>
         <div class="ls-micro" style="margin-bottom:var(--ls-sp-2)">No mission result available</div>
         <div style="font-size:var(--ls-size-xs)">Use the debug bar to run a mock mission first.</div>
       </div>`;
@@ -56,20 +55,19 @@ export function renderResults(root: HTMLElement, state: GameState): void {
   leftCol.style.cssText = 'flex:1; display:flex; flex-direction:column; gap:var(--ls-sp-3); min-width:0;';
 
   // Outcome banner
-  const bannerColor = flightOutcome === 'soft' ? 'var(--ls-green)' : flightOutcome === 'rough' ? 'var(--ls-amber)' : 'var(--ls-red)';
+  const bannerColor = flightOutcome === 'soft' ? 'var(--ok)' : flightOutcome === 'rough' ? 'var(--warn)' : 'var(--danger)';
   const banner = document.createElement('div');
-  banner.style.cssText = `border:1px solid ${bannerColor}; background:${bannerColor}18; border-radius:var(--ls-radius-md); padding:var(--ls-sp-4); display:flex; align-items:center; gap:var(--ls-sp-4);`;
+  banner.style.cssText = `border:1px solid ${bannerColor}; background:${bannerColor}18; border-radius:0; padding:var(--sp-4); display:flex; align-items:center; gap:var(--sp-4);`;
   banner.innerHTML = `
-    <div style="font-size:2.5rem">${flightOutcome === 'soft' ? '🎉' : flightOutcome === 'rough' ? '⚠️' : '💥'}</div>
-    <div style="flex:1">
-      <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-lg); font-weight:700; color:${bannerColor}; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px">
+    <div style="border-left:4px solid ${bannerColor}; padding-left:var(--sp-3); flex:1">
+      <div style="font-family:var(--font-mono); font-size:1.375rem; font-weight:700; color:${bannerColor}; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px">
         ${outcomeLabel}
       </div>
-      <div style="font-size:var(--ls-size-xs); color:var(--ls-text-dim)">${report.headline}</div>
+      <div style="font-size:1.125rem; color:var(--text); font-weight:500">${report.headline}</div>
     </div>
     <div>
-      <span class="ls-chip ${outcomePillClass}">${outcomeLabel}</span>
-      ${payout.isRecord ? '<span class="ls-chip ls-chip-orange" style="margin-left:4px">NEW RECORD</span>' : ''}
+      <span class="ls-chip ${outcomePillClass}" style="font-size:0.875rem; padding:4px 10px;">${outcomeLabel}</span>
+      ${payout.isRecord ? '<span class="ls-chip ls-chip-orange" style="font-size:0.875rem; padding:4px 10px; margin-left:6px">NEW RECORD</span>' : ''}
     </div>
   `;
   leftCol.appendChild(banner);
@@ -81,30 +79,30 @@ export function renderResults(root: HTMLElement, state: GameState): void {
     <div class="ls-panel-header"><span class="ls-panel-title">Financial Settlement</span></div>
     <div class="ls-panel-body">
       ${[
-        ['Contract Reward',   formatM(contract.rewardM),     'var(--ls-text-dim)'],
-        [`Streak ×${payout.streakMultiplier.toFixed(2)}`, '', 'var(--ls-text-dim)'],
-        ['Gross Reward',      `+${formatM(payout.grossRewardM)}`, 'var(--ls-green)'],
+        ['Contract Reward',   formatM(contract.rewardM),     'var(--text-muted)'],
+        [`Streak ×${payout.streakMultiplier.toFixed(2)}`, '', 'var(--text-muted)'],
+        ['Gross Reward',      `+${formatM(payout.grossRewardM)}`, 'var(--ok)'],
         ['separator', '', ''],
-        ['Build Cost',        `-${formatM(payout.buildCostM)}`,  'var(--ls-red)'],
-        ['Launch Cost',       `-${formatM(payout.launchCostM)}`, 'var(--ls-red)'],
-        ['Repair Cost',       `-${formatM(payout.repairCostM)}`, 'var(--ls-red)'],
+        ['Build Cost',        `-${formatM(payout.buildCostM)}`,  'var(--danger)'],
+        ['Launch Cost',       `-${formatM(payout.launchCostM)}`, 'var(--danger)'],
+        ['Repair Cost',       `-${formatM(payout.repairCostM)}`, 'var(--danger)'],
         ['separator', '', ''],
-        ['Net Result',        `${payout.netM >= 0 ? '+' : ''}${formatM(payout.netM)}`, payout.netM >= 0 ? 'var(--ls-green)' : 'var(--ls-red)'],
-        ['Agency Funds Now',  formatM(state.save.fundsM), 'var(--ls-green)'],
+        ['Net Result',        `${payout.netM >= 0 ? '+' : ''}${formatM(payout.netM)}`, payout.netM >= 0 ? 'var(--ok)' : 'var(--danger)'],
+        ['Agency Funds Now',  formatM(state.save.fundsM), 'var(--ok)'],
       ].map(([label, value, color]) => label === 'separator'
-        ? `<div style="border-top:1px solid var(--ls-border); margin:4px 0;"></div>`
-        : `<div style="display:flex; justify-content:space-between; padding:3px 0; font-size:var(--ls-size-xs);">
-            <span style="color:var(--ls-text-dim); font-family:var(--ls-font-mono); text-transform:uppercase; letter-spacing:0.06em">${label}</span>
-            <span style="font-family:var(--ls-font-mono); font-weight:600; color:${color}">${value}</span>
+        ? `<div style="border-top:1px solid var(--border); margin:6px 0;"></div>`
+        : `<div style="display:flex; justify-content:space-between; align-items:center; min-height:44px; padding:4px 0; font-size:1rem; border-bottom:1px solid rgba(42,42,43,0.5);">
+            <span style="color:var(--text-muted); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.06em">${label}</span>
+            <span style="font-family:var(--font-mono); font-weight:700; color:${color}">${value}</span>
            </div>`).join('')}
 
       <!-- Funding gate progress -->
-      <div class="ls-meter" style="margin-top:var(--ls-sp-3)">
+      <div class="ls-meter" style="margin-top:var(--sp-4)">
         <div class="ls-meter-row">
-          <span class="ls-meter-label">Funding Gate Progress</span>
-          <span class="ls-meter-value">${formatM(state.save.fundsM)} / ${formatM(contract.fundingGateM)}</span>
+          <span class="ls-meter-label" style="font-size:0.875rem">Funding Gate Progress</span>
+          <span class="ls-meter-value" style="font-size:0.875rem">${formatM(state.save.fundsM)} / ${formatM(contract.fundingGateM)}</span>
         </div>
-        <div class="ls-meter-track">
+        <div class="ls-meter-track" style="height:8px;">
           <div class="ls-meter-fill ${state.save.fundsM >= contract.fundingGateM ? 'ok' : 'info'}"
             style="width:${Math.min(100, (state.save.fundsM / contract.fundingGateM) * 100).toFixed(0)}%"></div>
         </div>
@@ -119,14 +117,14 @@ export function renderResults(root: HTMLElement, state: GameState): void {
     tlPanel.className = 'ls-panel';
     tlPanel.innerHTML = `
       <div class="ls-panel-header"><span class="ls-panel-title">Mission Timeline</span></div>
-      <div class="ls-panel-body" style="max-height:160px; overflow-y:auto;">
+      <div class="ls-panel-body" style="max-height:180px; overflow-y:auto;">
         ${report.timeline.map(ev => {
-          const color = ev.kind === 'failure' || ev.kind === 'malfunction' ? 'var(--ls-red)'
-            : ev.kind === 'warning' ? 'var(--ls-amber)'
-            : ev.kind === 'milestone' ? 'var(--ls-green)'
-            : 'var(--ls-text-dim)';
-          return `<div style="display:flex; gap:var(--ls-sp-2); padding:3px 0; border-bottom:1px solid var(--ls-border); font-size:var(--ls-size-xs);">
-            <span style="color:var(--ls-text-micro); font-family:var(--ls-font-mono); flex-shrink:0">T+${ev.tS.toFixed(0)}s</span>
+          const color = ev.kind === 'failure' || ev.kind === 'malfunction' ? 'var(--danger)'
+            : ev.kind === 'warning' ? 'var(--warn)'
+            : ev.kind === 'milestone' ? 'var(--ok)'
+            : 'var(--text-muted)';
+          return `<div style="display:flex; gap:var(--sp-3); padding:6px 0; border-bottom:1px solid var(--border); font-size:0.875rem;">
+            <span style="color:var(--text-muted); font-family:var(--font-mono); flex-shrink:0">T+${ev.tS.toFixed(0)}s</span>
             <span style="color:${color}">${ev.text}</span>
           </div>`;
         }).join('')}
@@ -139,7 +137,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
 
   // ── Right column ──────────────────────────────────────
   const rightCol = document.createElement('div');
-  rightCol.style.cssText = 'width:300px; flex-shrink:0; display:flex; flex-direction:column; gap:var(--ls-sp-3);';
+  rightCol.style.cssText = 'width:340px; flex-shrink:0; display:flex; flex-direction:column; gap:var(--sp-3);';
 
   // Score breakdown
   const scorePanel = document.createElement('div');
@@ -147,7 +145,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
   scorePanel.innerHTML = `
     <div class="ls-panel-header">
       <span class="ls-panel-title">Performance Score</span>
-      <span style="font-family:var(--ls-font-mono); font-size:var(--ls-size-lg); font-weight:700; color:var(--ls-orange)">${payout.score.total}<span style="font-size:var(--ls-size-xs); color:var(--ls-text-dim)"> / 100</span></span>
+      <span style="font-family:var(--font-mono); font-size:1.75rem; font-weight:700; color:var(--accent)">${payout.score.total}<span style="font-size:0.875rem; color:var(--text-muted)"> / 100</span></span>
     </div>
     <div class="ls-panel-body">
       ${([ ['Landing Accuracy', payout.score.landing],
@@ -156,12 +154,12 @@ export function renderResults(root: HTMLElement, state: GameState): void {
             ['Decisions',        payout.score.decisions],
             ['Team Bonus',       payout.score.teamBonus],
           ] as [string, number][]).map(([label, val]) => `
-        <div class="ls-meter" style="margin-bottom:var(--ls-sp-2)">
+        <div class="ls-meter" style="margin-bottom:var(--sp-3)">
           <div class="ls-meter-row">
-            <span class="ls-meter-label">${label}</span>
-            <span class="ls-meter-value">${val}<span style="color:var(--ls-text-micro)">/ 100</span></span>
+            <span class="ls-meter-label" style="font-size:0.8125rem">${label}</span>
+            <span class="ls-meter-value" style="font-size:0.9375rem">${val}<span style="color:var(--text-muted)">/ 100</span></span>
           </div>
-          <div class="ls-meter-track">
+          <div class="ls-meter-track" style="height:8px;">
             <div class="ls-meter-fill ${val >= 80 ? 'ok' : val >= 50 ? 'warn' : 'bad'}" style="width:${val}%"></div>
           </div>
         </div>`).join('')}
@@ -176,7 +174,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
     <div class="ls-panel-header"><span class="ls-panel-title">Flight Analysis</span></div>
     <div class="ls-panel-body">
       ${report.causes.map(c => `
-        <div class="ls-advisory ${c.severity === 'critical' ? 'error' : c.severity === 'warning' ? '' : c.severity === 'good' ? 'ok' : 'info'}">
+        <div class="ls-advisory ${c.severity === 'critical' ? 'error' : c.severity === 'warning' ? '' : c.severity === 'good' ? 'ok' : 'info'}" style="font-size:0.9375rem; margin-bottom:var(--sp-2)">
           <div class="ls-advisory-title">${c.severity.toUpperCase()}</div>
           ${c.text}
         </div>`).join('')}
@@ -194,7 +192,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
         ${report.suggestions.map(s => `<div class="ls-advisory info" style="margin-bottom:4px"><div class="ls-advisory-title">Recommendation</div>${s}</div>`).join('')}
         ${report.similarRealMission ? `
           <div style="font-size:var(--ls-size-xs); color:var(--ls-text-dim); border-top:1px solid var(--ls-border); padding-top:var(--ls-sp-2); margin-top:var(--ls-sp-2);">
-            🏛 Historical benchmark:<br><em style="color:var(--ls-text)">${report.similarRealMission}</em>
+            Historical benchmark:<br><em style="color:var(--ls-text)">${report.similarRealMission}</em>
           </div>` : ''}
       </div>
     `;

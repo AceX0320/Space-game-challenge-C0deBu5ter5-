@@ -11,15 +11,19 @@ import { computeShipStats } from '@/builder/compute-ship-stats';
 import { validateDesign } from '@/builder/validate-design';
 import { formatM } from '@/core/units';
 
+const SVG_GO   = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><polyline points="2,8 6,13 14,4" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_NOGO = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><line x1="4" y1="4" x2="12" y2="12" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="4" x2="4" y2="12" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+const SVG_WARN = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2 L14 13 H2 Z" stroke="var(--warn)" stroke-width="1.5" stroke-linejoin="round" fill="none"/><line x1="8" y1="6" x2="8" y2="10" stroke="var(--warn)" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12" r="0.5" fill="var(--warn)" stroke="var(--warn)" stroke-width="0.5"/></svg>`;
+
 function checkRow(label: string, value: string, status: 'go' | 'nogo' | 'warn', note = ''): string {
-  const color = status === 'go' ? 'var(--ls-green)' : status === 'nogo' ? 'var(--ls-red)' : 'var(--ls-amber)';
-  const icon  = status === 'go' ? '✓' : status === 'nogo' ? '✕' : '△';
+  const color = status === 'go' ? 'var(--ok)' : status === 'nogo' ? 'var(--danger)' : 'var(--warn)';
+  const icon  = status === 'go' ? SVG_GO : status === 'nogo' ? SVG_NOGO : SVG_WARN;
   return `
-    <div style="display:flex; align-items:center; gap:var(--ls-sp-3); padding:6px 0; border-bottom:1px solid var(--ls-border);">
-      <span style="color:${color}; font-family:var(--ls-font-mono); font-size:var(--ls-size-xs); width:12px; text-align:center">${icon}</span>
-      <span style="flex:1; font-family:var(--ls-font-mono); font-size:var(--ls-size-xs); text-transform:uppercase; letter-spacing:0.06em; color:var(--ls-text-dim)">${label}</span>
-      <span style="font-family:var(--ls-font-mono); font-size:var(--ls-size-xs); color:${color}">${value}</span>
-      ${note ? `<span style="font-size:0.6rem; color:var(--ls-text-micro)" title="${note}">ⓘ</span>` : ''}
+    <div style="display:flex; align-items:center; gap:var(--sp-3); padding:6px 0; border-bottom:1px solid var(--border);">
+      <span style="width:14px; display:flex; align-items:center; flex-shrink:0">${icon}</span>
+      <span style="flex:1; font-family:var(--font-mono); font-size:0.6875rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted)">${label}</span>
+      <span style="font-family:var(--font-mono); font-size:0.6875rem; color:${color}">${value}</span>
+      ${note ? `<span style="font-size:0.625rem; color:var(--text-muted); cursor:help" title="${note}">?</span>` : ''}
     </div>`;
 }
 
@@ -34,7 +38,7 @@ export function renderPreflight(root: HTMLElement, state: GameState): void {
   const violations = validateDesign(state.design, stats, contract);
   const isGo = violations.length === 0;
 
-  const launchBtn = mkPrimary(isGo ? '🚀 Initiate Launch Sequence' : '⛔ No-Go — Fix Violations', () => {
+  const launchBtn = mkPrimary(isGo ? 'Initiate Launch Sequence' : 'No-Go — Fix Violations', () => {
     if (isGo) transitionTo('flight');
   });
   launchBtn.disabled = !isGo;
@@ -56,27 +60,26 @@ export function renderPreflight(root: HTMLElement, state: GameState): void {
   // Status banner
   const banner = document.createElement('div');
   banner.style.cssText = `
-    border:1px solid ${isGo ? 'var(--ls-green)' : 'var(--ls-red)'};
-    background:${isGo ? 'rgba(31,169,113,0.08)' : 'rgba(224,53,53,0.08)'};
-    border-radius:var(--ls-radius-md);
-    padding:var(--ls-sp-4);
+    border:1px solid ${isGo ? 'var(--ok)' : 'var(--danger)'};
+    background:${isGo ? 'rgba(97,221,160,0.06)' : 'rgba(224,53,53,0.06)'};
+    border-radius:0;
+    padding:var(--sp-4);
     display:flex;
     align-items:center;
-    gap:var(--ls-sp-4);
+    gap:var(--sp-4);
   `;
   banner.innerHTML = `
-    <div style="font-size:2rem">${isGo ? '✅' : '🚫'}</div>
-    <div>
-      <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-lg); font-weight:700; color:${isGo ? 'var(--ls-green)' : 'var(--ls-red)'}; letter-spacing:0.1em; text-transform:uppercase">
+    <div style="border-left:4px solid ${isGo ? 'var(--ok)' : 'var(--danger)'}; padding-left:var(--sp-4); flex:1;">
+      <div style="font-family:var(--font-mono); font-size:1.125rem; font-weight:700; color:${isGo ? 'var(--ok)' : 'var(--danger)'}; letter-spacing:0.1em; text-transform:uppercase">
         ${isGo ? 'GO FOR LAUNCH' : 'NO-GO — DESIGN VIOLATIONS'}
       </div>
-      <div style="font-size:var(--ls-size-xs); color:var(--ls-text-dim); margin-top:4px">
+      <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:4px">
         Pre-flight Readiness Review · ${contract.title} → ${body.name}
       </div>
     </div>
-    <div style="margin-left:auto; text-align:right;">
-      <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-xs); color:var(--ls-text-micro)">FAILURE RISK</div>
-      <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-xl); font-weight:700; color:${(1 - stats.reliability) > 0.2 ? 'var(--ls-red)' : 'var(--ls-amber)'}">
+    <div style="text-align:right; flex-shrink:0;">
+      <div style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--text-muted)">FAILURE RISK</div>
+      <div style="font-family:var(--font-mono); font-size:1.375rem; font-weight:700; color:${(1 - stats.reliability) > 0.2 ? 'var(--danger)' : 'var(--warn)'}">
         ${((1 - stats.reliability) * 100).toFixed(1)}%
       </div>
     </div>

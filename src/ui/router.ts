@@ -40,17 +40,4 @@ export function renderRouter(appRoot: HTMLElement, state: GameState): void {
       renderTeam(appRoot, state);
       break;
   }
-
-  // Render persistent footer with version/commit stamp
-  let footer = document.getElementById('app-footer');
-  if (!footer) {
-    footer = document.createElement('footer');
-    footer.id = 'app-footer';
-    footer.className = 'app-footer';
-    document.body.appendChild(footer);
-  }
-  footer.innerHTML = `
-    <div>Launchsmith v0.1.0 · NASA Space Apps Challenge 2026</div>
-    <div>Commit Build: <strong>#setup-init (Hour 0–1 Scaffold)</strong> · Environment: <strong>Client-Only Static</strong></div>
-  `;
 }
