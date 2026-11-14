@@ -39,8 +39,8 @@ export function renderResearch(root: HTMLElement, state: GameState): void {
             ? state.save.inventory
                 .map(
                   (inv) =>
-                    `<span class="ls-chip ls-chip-green" style="padding:4px 10px; font-size:var(--ls-size-xs)">
-                      📦 <strong>${inv.itemId}:</strong> ${inv.quantity} unit(s)
+                    `<span class="ls-chip ls-chip-green" style="padding:4px 10px; font-size:0.6875rem">
+                      <strong>${inv.itemId}:</strong> ${inv.quantity} unit(s)
                     </span>`
                 )
                 .join('')
@@ -101,7 +101,7 @@ export function renderResearch(root: HTMLElement, state: GameState): void {
           <div>
             ${
               isUnlocked
-                ? `<div style="color:var(--ls-green); font-family:var(--ls-font-mono); font-size:var(--ls-size-xs); font-weight:600">✓ Technology Researched</div>`
+                ? `<div style="color:var(--ok); font-family:var(--font-mono); font-size:0.6875rem; font-weight:600">Technology Researched</div>`
                 : available
                   ? `<button class="ls-btn ls-btn-primary" data-research="${node.id}" style="width:100%; justify-content:center;">Unlock Technology (${formatM(node.costM)})</button>`
                   : `<button class="ls-btn" disabled style="width:100%; justify-content:center;">Requirements Not Met</button>`

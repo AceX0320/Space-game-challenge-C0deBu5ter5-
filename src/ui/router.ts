@@ -23,37 +23,78 @@ const ALL_PHASES: GamePhase[] = [
   'team',
 ];
 
-export function renderRouter(appRoot: HTMLElement, state: GameState): void {
-  // Ensure debug bar exists or is updated
-  let debugBar = document.getElementById('debug-bar');
-  if (!debugBar) {
-    debugBar = document.createElement('div');
-    debugBar.id = 'debug-bar';
-    debugBar.className = 'debug-bar';
-    document.body.insertBefore(debugBar, document.body.firstChild);
+/** Set up bottom-left dev debug bar (DEV builds only). Called once. */
+function initDebugBar(): HTMLElement | null {
+  if (!import.meta.env.DEV) return null;
+
+  let bar = document.getElementById('debug-bar');
+  if (bar) return bar;
+
+  bar = document.createElement('div');
+  bar.id = 'debug-bar';
+  bar.className = 'debug-bar';
+  bar.dataset['collapsed'] = 'false';
+
+  // Label / toggle
+  const label = document.createElement('span');
+  label.className = 'debug-label';
+  label.textContent = 'DEV';
+  label.title = 'Toggle debug bar (or press `)';
+  label.addEventListener('click', () => toggleDebugBar(bar!));
+  bar.appendChild(label);
+
+  // Content wrapper (hidden when collapsed)
+  const content = document.createElement('div');
+  content.className = 'debug-content';
+  content.style.cssText = 'display:flex; flex-wrap:wrap; gap:3px; align-items:center;';
+  bar.appendChild(content);
+
+  document.body.appendChild(bar);
+
+  // Keyboard shortcut: backtick
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '`' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      toggleDebugBar(bar!);
+    }
+  });
+
+  return bar;
+}
+
+function toggleDebugBar(bar: HTMLElement): void {
+  const collapsed = bar.dataset['collapsed'] === 'true';
+  bar.dataset['collapsed'] = collapsed ? 'false' : 'true';
+  bar.classList.toggle('is-collapsed', !collapsed);
+}
+
+function updateDebugBar(bar: HTMLElement, state: GameState): void {
+  const content = bar.querySelector('.debug-content') as HTMLElement | null;
+  if (!content) return;
+
+  content.innerHTML = '';
+
+  for (const phase of ALL_PHASES) {
+    const btn = document.createElement('button');
+    btn.textContent = phase;
+    if (state.phase === phase) btn.classList.add('debug-active');
+    btn.addEventListener('click', () => transitionTo(phase as GamePhase));
+    content.appendChild(btn);
   }
 
-  debugBar.innerHTML = `
-    <span>🛠️ DEV DEBUG BAR:</span>
-    ${ALL_PHASES.map(
-      (phase) =>
-        `<button data-phase="${phase}" style="${state.phase === phase ? 'background:#4338ca; border-color:#818cf8;' : ''}">${phase}</button>`
-    ).join('')}
-    <button class="primary" id="btn-mock-mission" style="margin-left:auto">▶ Run Mock Mission (End-to-End)</button>
-  `;
+  const mockBtn = document.createElement('button');
+  mockBtn.id = 'btn-mock-mission';
+  mockBtn.textContent = 'Run Mock Mission';
+  mockBtn.style.marginLeft = '4px';
+  mockBtn.addEventListener('click', () => runMockMission());
+  content.appendChild(mockBtn);
+}
 
-  debugBar.querySelectorAll('button[data-phase]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const phase = (e.currentTarget as HTMLElement).getAttribute('data-phase') as GamePhase;
-      if (phase) {
-        transitionTo(phase);
-      }
-    });
-  });
-
-  debugBar.querySelector('#btn-mock-mission')?.addEventListener('click', () => {
-    runMockMission();
-  });
+export function renderRouter(appRoot: HTMLElement, state: GameState): void {
+  // Debug bar: DEV only, bottom-left, never overlapping header
+  const debugBar = initDebugBar();
+  if (debugBar && import.meta.env.DEV) {
+    updateDebugBar(debugBar, state);
+  }
 
   // Render current phase screen into appRoot
   switch (state.phase) {
@@ -85,17 +126,4 @@ export function renderRouter(appRoot: HTMLElement, state: GameState): void {
       renderTeam(appRoot, state);
       break;
   }
-
-  // Render persistent footer with version/commit stamp
-  let footer = document.getElementById('app-footer');
-  if (!footer) {
-    footer = document.createElement('footer');
-    footer.id = 'app-footer';
-    footer.className = 'app-footer';
-    document.body.appendChild(footer);
-  }
-  footer.innerHTML = `
-    <div>Launchsmith v0.1.0 · NASA Space Apps Challenge 2026</div>
-    <div>Commit Build: <strong>#setup-init (Hour 0–1 Scaffold)</strong> · Environment: <strong>Client-Only Static</strong></div>
-  `;
 }

@@ -17,9 +17,9 @@ export function createSliderRow(
       <span style="color:var(--ls-text-dim)" title="${spec.explain}">${spec.label}</span>
       <span class="slider-display" style="font-family:var(--ls-font-mono); color:var(--ls-text)">${currentValue.toFixed(2)} ${spec.unit}</span>
     </div>
-    <div style="position:relative; height:6px; background:var(--ls-surface); border-radius:3px; margin-bottom:2px;">
-      <div class="slider-fill" style="position:absolute; left:0; top:0; height:100%; width:${pct.toFixed(0)}%; background:var(--ls-orange); border-radius:3px;"></div>
-      <div style="position:absolute; left:${nomPct.toFixed(0)}%; top:-3px; width:1px; height:12px; background:var(--ls-green);" title="Nominal: ${spec.default}"></div>
+    <div style="position:relative; height:6px; background:var(--bg-inset); border:1px solid var(--border); border-radius:0; margin-bottom:2px;">
+      <div class="slider-fill" style="position:absolute; left:0; top:0; height:100%; width:${pct.toFixed(0)}%; background:var(--accent); border-radius:0;"></div>
+      <div style="position:absolute; left:${nomPct.toFixed(0)}%; top:-3px; width:1px; height:12px; background:var(--ok);" title="Nominal: ${spec.default}"></div>
     </div>
     <input type="range" min="${spec.min}" max="${spec.max}" step="${spec.step}" value="${currentValue}"
       style="width:100%; accent-color:var(--ls-orange); height:3px;" ${tutorialId ? `data-tutorial="${tutorialId}"` : ''} />

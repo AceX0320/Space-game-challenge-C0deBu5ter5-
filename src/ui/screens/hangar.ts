@@ -164,34 +164,34 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
 
   // Blueprint ship drawing
   const blueprint = document.createElement('div');
-  blueprint.style.cssText = 'flex:1; display:flex; align-items:center; justify-content:center; background:rgba(0,8,20,0.6); border-bottom:1px solid var(--ls-border); min-height:200px; position:relative;';
+  blueprint.style.cssText = 'flex:1; display:flex; align-items:center; justify-content:center; background:var(--bg-inset); border-bottom:1px solid var(--border); min-height:200px; position:relative;';
   blueprint.innerHTML = `
-    <svg width="160" height="220" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.7">
+    <svg width="160" height="220" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.75">
       <!-- Blueprint grid -->
       <defs>
         <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(58,142,246,0.15)" stroke-width="0.5"/>
+          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="var(--border)" stroke-width="0.5"/>
         </pattern>
       </defs>
       <rect width="160" height="220" fill="url(#grid)"/>
-      <!-- Lander body (schematic) -->
-      <rect x="55" y="40" width="50" height="60" rx="4" stroke="#3A8EF6" stroke-width="1" fill="rgba(58,142,246,0.08)"/>
+      <!-- Lander body -->
+      <rect x="55" y="40" width="50" height="60" stroke="var(--text-muted)" stroke-width="1" fill="rgba(171,137,127,0.06)"/>
       <!-- Engine bell -->
-      <path d="M65 100 L55 130 M95 100 L105 130" stroke="#3A8EF6" stroke-width="1"/>
-      <ellipse cx="80" cy="130" rx="25" ry="8" stroke="#FF5A1F" stroke-width="1" fill="rgba(255,90,31,0.1)"/>
+      <path d="M65 100 L55 130 M95 100 L105 130" stroke="var(--text-muted)" stroke-width="1"/>
+      <ellipse cx="80" cy="130" rx="25" ry="8" stroke="var(--accent)" stroke-width="1.5" fill="rgba(255,90,31,0.08)"/>
       <!-- Legs -->
-      <line x1="55" y1="110" x2="30" y2="150" stroke="#3A8EF6" stroke-width="1"/>
-      <line x1="105" y1="110" x2="130" y2="150" stroke="#3A8EF6" stroke-width="1"/>
-      <line x1="30" y1="150" x2="20" y2="155" stroke="#3A8EF6" stroke-width="1.5"/>
-      <line x1="130" y1="150" x2="140" y2="155" stroke="#3A8EF6" stroke-width="1.5"/>
+      <line x1="55" y1="110" x2="30" y2="150" stroke="var(--text-muted)" stroke-width="1"/>
+      <line x1="105" y1="110" x2="130" y2="150" stroke="var(--text-muted)" stroke-width="1"/>
+      <line x1="30" y1="150" x2="20" y2="155" stroke="var(--text-muted)" stroke-width="1.5"/>
+      <line x1="130" y1="150" x2="140" y2="155" stroke="var(--text-muted)" stroke-width="1.5"/>
       <!-- Antenna -->
-      <line x1="80" y1="40" x2="80" y2="10" stroke="#3A8EF6" stroke-width="1"/>
-      <circle cx="80" cy="8" r="3" stroke="#1FA971" stroke-width="1" fill="none"/>
+      <line x1="80" y1="40" x2="80" y2="10" stroke="var(--text-muted)" stroke-width="1"/>
+      <circle cx="80" cy="8" r="3" stroke="var(--ok)" stroke-width="1" fill="none"/>
       <!-- Dimension lines -->
-      <line x1="40" y1="40" x2="40" y2="130" stroke="rgba(58,142,246,0.4)" stroke-width="0.5" stroke-dasharray="2 2"/>
-      <text x="22" y="88" fill="rgba(58,142,246,0.6)" font-size="7" font-family="monospace">H</text>
+      <line x1="40" y1="40" x2="40" y2="130" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="2 2"/>
+      <text x="22" y="88" fill="var(--text-muted)" font-size="7" font-family="monospace">H</text>
     </svg>
-    <div style="position:absolute; top:8px; right:8px; font-family:var(--ls-font-mono); font-size:0.6rem; color:rgba(58,142,246,0.5)">2D BLUEPRINT · ${design.name}</div>
+    <div style="position:absolute; top:8px; right:8px; font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted)">2D · ${design.name}</div>
   `;
   mainCol.appendChild(blueprint);
 

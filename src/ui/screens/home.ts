@@ -21,40 +21,40 @@ export function renderHome(root: HTMLElement, state: GameState): void {
   centerBox.style.cssText = 'max-width:680px; width:100%; display:flex; flex-direction:column; gap:var(--ls-sp-4); text-align:center;';
 
   centerBox.innerHTML = `
-    <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-xs); color:var(--ls-orange); letter-spacing:0.15em; text-transform:uppercase">
+    <div style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--accent); letter-spacing:0.15em; text-transform:uppercase">
       NASA Space Apps Challenge 2026
     </div>
-    <h1 style="font-size:2.4rem; font-weight:700; color:var(--ls-text); letter-spacing:0.02em; margin:0">
+    <h1 style="font-family:var(--font-ui); font-size:2.4rem; font-weight:700; color:var(--text); letter-spacing:0.75px; margin:0">
       LAUNCHSMITH
     </h1>
-    <p style="font-size:var(--ls-size-base); color:var(--ls-text-dim); line-height:1.6; margin:0 auto; max-width:540px">
+    <p style="font-size:0.875rem; color:var(--text-muted); line-height:1.6; margin:0 auto; max-width:540px">
       Design, engineer, fly, and land scientific spacecraft across the Solar System. Balance propulsion physics, payload limits, and agency capital.
     </p>
 
-    <div class="ls-panel" style="text-align:left; margin-top:var(--ls-sp-2);">
+    <div class="ls-panel" style="text-align:left; margin-top:var(--sp-2);">
       <div class="ls-panel-header"><span class="ls-panel-title">Agency Standing</span></div>
-      <div class="ls-panel-body" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--ls-sp-3);">
+      <div class="ls-panel-body" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-3);">
         <div>
           <div class="ls-micro">Available Capital</div>
-          <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-lg); font-weight:700; color:var(--ls-green)">
+          <div style="font-family:var(--font-mono); font-size:1.125rem; font-weight:700; color:var(--ok)">
             ${formatM(state.save.fundsM)}
           </div>
         </div>
         <div>
           <div class="ls-micro">Operational Difficulty</div>
-          <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-lg); font-weight:700; color:var(--ls-text); text-transform:uppercase">
+          <div style="font-family:var(--font-mono); font-size:1.125rem; font-weight:700; color:var(--text); text-transform:uppercase">
             ${state.save.difficulty}
           </div>
         </div>
         <div>
           <div class="ls-micro">Contracts Completed</div>
-          <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-base); color:var(--ls-text)">
+          <div style="font-family:var(--font-mono); font-size:0.875rem; color:var(--text)">
             ${Object.keys(state.save.completedContracts).length} missions logged
           </div>
         </div>
         <div>
           <div class="ls-micro">Active Craft Blueprint</div>
-          <div style="font-family:var(--ls-font-mono); font-size:var(--ls-size-base); color:var(--ls-text)">
+          <div style="font-family:var(--font-mono); font-size:0.875rem; color:var(--text)">
             ${state.design.name} (${state.design.parts.length} parts)
           </div>
         </div>
