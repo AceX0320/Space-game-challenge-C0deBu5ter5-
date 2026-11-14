@@ -122,9 +122,9 @@ export function computeShipStats(design: ShipDesign, catalog: PartDef[], body: B
     reliability: Math.pow(reliabilityProduct, 1 / Math.max(1, design.parts.length)),
     controlAuthority: Math.min(1, controlSum / 3),
     touchdownLimits: {
-      maxVyMs: 6,
-      maxVxMs: 3,
-      maxTiltDeg: 15,
+      maxVyMs: 9,
+      maxVxMs: 5,
+      maxTiltDeg: 22,
     },
     warnings,
     valid: violations.length === 0,

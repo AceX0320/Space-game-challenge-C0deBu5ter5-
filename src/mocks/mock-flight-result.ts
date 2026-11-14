@@ -2,6 +2,8 @@ import type { FlightResult } from '@/types';
 
 export const mockFlightResult: FlightResult = {
   outcome: 'soft',
+  partUsage: {},
+  touchdownStress: 0.1,
   landingRing: 5, // Bullseye!
   distanceFromTargetM: 14.2,
   touchdownVyMs: -1.8,

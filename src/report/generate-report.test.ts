@@ -82,6 +82,8 @@ const goodScavenge: ScavengeResult = {
 function softFlight(overrides: Partial<FlightResult> = {}): FlightResult {
   return {
     outcome: 'soft',
+    partUsage: {},
+    touchdownStress: 0.1,
     landingRing: 5,
     distanceFromTargetM: 10,
     touchdownVyMs: -2.5,

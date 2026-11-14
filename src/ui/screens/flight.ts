@@ -326,13 +326,14 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
     const pitchRight = cmd.rotateRight || heldControls.has('right');
     const pitchLeft = cmd.rotateLeft || heldControls.has('left');
     const pitchRate = (pitchRight ? 35 : 0) - (pitchLeft ? 35 : 0);
+    const rcs = (pitchRight ? 1 : 0) - (pitchLeft ? 1 : 0);
     const throttle = cmd.thrust || heldControls.has('thrust') ? 1.0 : analogThrottle;
 
     // Step simulation
     sim.step(dtS, {
       throttle,
       pitchRate,
-      rcs: 0,
+      rcs,
       deployParachute: heldControls.has('chute'),
     });
 

@@ -146,9 +146,10 @@ export function createFlightSim(
           state.phaseProgress = 0;
           state.xM = approachX;
           state.yM = TARGET_APPROACH_ALTITUDE_M;
-          state.vxMs = approachVx;
-          state.vyMs = -20;
+          state.vxMs = approachVx * 0.5;
+          state.vyMs = -6;
           state.tiltDeg = 0;
+          state.fuelKg = Math.max(state.fuelKg, stats.fuelMassKg * 0.6);
           fuelAtTargetApproachKg = state.fuelKg;
           events.push({
             tS: state.tS,
@@ -178,7 +179,7 @@ export function createFlightSim(
       const clampedThrottle = Math.max(0, Math.min(1, controls.throttle));
       state.throttle = state.fuelKg > 0 ? clampedThrottle : 0;
 
-      const fuelBurn = state.throttle * maxFuelFlowKgS * dtS;
+      const fuelBurn = state.throttle * maxFuelFlowKgS * dtS * (isAscent ? 0.35 : 1.0);
       if (state.fuelKg > 0 && state.fuelKg <= fuelBurn) {
         state.fuelKg = 0;
         if (!fuelDepletedEventLogged) {
@@ -202,12 +203,15 @@ export function createFlightSim(
       // Current total wet mass
       const currentMass = Math.max(10, stats.dryMassKg + state.fuelKg);
 
-      // Forces: Thrust
+      // Forces: Thrust (tilted right pushes ship right)
       const thrustMag = state.throttle * currentThrustMax;
-      // Tilt 0 deg = straight up (+y)
       const rad = (state.tiltDeg * Math.PI) / 180;
-      const thrustX = -thrustMag * Math.sin(rad); // tilted right => pushes leftward or vice versa
+      const thrustX = thrustMag * Math.sin(rad);
       const thrustY = thrustMag * Math.cos(rad);
+
+      // Forces: RCS Lateral Translation (shifter authority)
+      const rcsThrustN = Math.max(8000, currentThrustMax * 0.25);
+      const rcsForceX = (controls.rcs ?? 0) * rcsThrustN;
 
       // Forces: Gravity
       // Surface gravity acts downward (-y)
@@ -237,7 +241,7 @@ export function createFlightSim(
       }
 
       // Net Acceleration
-      const ax = (thrustX + dragForceX) / currentMass;
+      const ax = (thrustX + rcsForceX + dragForceX) / currentMass;
       const ay = (thrustY + gravForceY + dragForceY) / currentMass;
 
       // Velocity & Position Integration (Symplectic / Semi-Implicit Euler)
@@ -351,6 +355,8 @@ export function createFlightSim(
 
       return {
         outcome,
+        partUsage: {},
+        touchdownStress: outcome === 'crash' ? 1.0 : outcome === 'rough' ? 0.6 : 0.1,
         landingRing: ring,
         distanceFromTargetM: distM,
         touchdownVyMs: state.vyMs,
@@ -394,8 +400,8 @@ export function autoFly(sim: FlightSim): FlightResult {
     // 1. Attitude stabilization: drive tilt towards 0 (strictly 0 near surface)
     let targetTilt = 0;
     if (s.yM > 80) {
-      if (s.vxMs > 1.5) targetTilt = 2.0;
-      else if (s.vxMs < -1.5) targetTilt = -2.0;
+      if (s.vxMs > 1.5) targetTilt = -2.0;
+      else if (s.vxMs < -1.5) targetTilt = 2.0;
     }
     const pitchRate = Math.max(-12, Math.min(12, (targetTilt - s.tiltDeg) * 6));
 
