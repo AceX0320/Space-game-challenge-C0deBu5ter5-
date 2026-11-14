@@ -1,4 +1,4 @@
-﻿import type { GameState } from '@/state/store';
+import type { GameState } from '@/state/store';
 import { getStore } from '@/state/store';
 import { transitionTo } from '@/state/flow';
 import { getBodies, getContracts, getItems, getParts } from '@/data/index';
