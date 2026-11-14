@@ -1,4 +1,4 @@
-import type { GameState } from '@/state/store';
+﻿import type { GameState } from '@/state/store';
 import { getStore } from '@/state/store';
 import { transitionTo } from '@/state/flow';
 import { getBodies, getContracts, getItems, getParts } from '@/data/index';
@@ -68,7 +68,7 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
   const canvas = document.createElement('canvas');
   canvas.width = 1200;
   canvas.height = 560;
-  canvas.style.cssText = 'width:100%; height:100%; background:#0e0e0f; display:block;';
+  canvas.style.cssText = 'width:100%; height:100%; background:#040711; display:block;';
   canvas.setAttribute('aria-label', `Live mission route from Earth to ${body.name}, with the spacecraft's current flight position.`);
   canvasPanel.appendChild(canvas);
   bodyEl.appendChild(canvasPanel);
@@ -343,11 +343,11 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       const h = canvas.height;
 
       // 1. Clear background
-      ctx.fillStyle = '#0e0e0f';
+      ctx.fillStyle = '#040711';
       ctx.fillRect(0, 0, w, h);
 
       // 2. Starfield
-      ctx.fillStyle = 'rgba(229, 226, 227, 0.45)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
       for (let i = 0; i < 60; i++) {
         const sx = (i * 233) % w;
         const sy = (i * 97) % (h - 90);
@@ -360,17 +360,16 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       const isAscent = s.phase === 'ascent';
       const isTransit = s.phase === 'transit';
       const isDescent = !isAscent && !isTransit;
-
       if (!isTransit) {
         ctx.fillStyle = isAscent
           ? '#1d5368'
           : body.id === 'mars'
-            ? '#331d20'
+            ? '#4c1d24'
             : body.id === 'venus'
-              ? '#332917'
-              : '#1c1b1c';
+              ? '#4a3b1a'
+              : '#1e293b';
         ctx.fillRect(0, groundY, w, 70);
-        ctx.strokeStyle = '#2a2a2b';
+        ctx.strokeStyle = '#526177';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, groundY);
@@ -383,20 +382,20 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
         ctx.fillRect(centerX - 40, groundY - 8, 80, 8);
         ctx.fillStyle = '#7896a8';
         ctx.fillRect(centerX - 24, groundY - 22, 48, 14);
-        ctx.fillStyle = '#e5e2e3';
-        ctx.font = '12px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#d9e7ff';
+        ctx.font = '12px monospace';
         ctx.fillText('EARTH LAUNCH PAD', centerX + 52, groundY - 8);
       }
 
       if (isDescent) {
-        const ringColors = ['#1c1b1c', '#2a2a2b', '#ab897f', '#ff5a1f', '#61dda0'];
+        const ringColors = ['#0f172a', '#1e3a5f', '#1d4ed8', '#0284c7', '#1FA971'];
         const ringWidths = [300, 220, 150, 80, 36];
         for (let r = 0; r < 5; r++) {
-          ctx.fillStyle = ringColors[r] ?? '#61dda0';
+          ctx.fillStyle = ringColors[r] ?? '#1FA971';
           const rw = ringWidths[r] ?? 36;
-          ctx.fillRect(centerX - rw / 2, groundY, rw, 6);
+          ctx.fillRect(centerX - rw / 2, groundY, rw, 8);
         }
-        ctx.strokeStyle = '#ff5a1f';
+        ctx.strokeStyle = '#FF5A1F';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(centerX, groundY - 12);
@@ -404,9 +403,8 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
         ctx.stroke();
       }
 
-      // 4. Spacecraft Position (Scaled for Display, offset by footpad height 19px)
-      const FOOTPAD_OFFSET_PX = 19;
-      const descentScaleY = (groundY - 50 - FOOTPAD_OFFSET_PX) / 1000;
+      // 4. Spacecraft Position: launch altitude, transfer arc, or landing approach.
+      const descentScaleY = (groundY - 50) / 1000;
       const launchScaleY = (groundY - 90) / LAUNCH_TARGET_ALTITUDE_M;
       const craftX = isTransit
         ? 90 + (w - 180) * s.phaseProgress
@@ -415,14 +413,14 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
         ? groundY * 0.48 - Math.sin(Math.PI * s.phaseProgress) * 150
         : isAscent
           ? groundY - Math.max(0, s.yM) * launchScaleY
-          : Math.max(50, (groundY - FOOTPAD_OFFSET_PX) - s.yM * descentScaleY);
+          : Math.max(50, groundY - s.yM * descentScaleY);
 
       ctx.save();
       ctx.translate(craftX, craftY);
       ctx.rotate((s.tiltDeg * Math.PI) / 180);
 
       // Rocket Cabin
-      ctx.fillStyle = '#e5e2e3';
+      ctx.fillStyle = '#E8EAF0';
       ctx.beginPath();
       ctx.moveTo(0, -24);
       ctx.lineTo(11, 8);
@@ -431,13 +429,13 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       ctx.fill();
 
       // Cockpit window
-      ctx.fillStyle = '#61dda0';
+      ctx.fillStyle = '#3A8EF6';
       ctx.beginPath();
       ctx.arc(0, -9, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Landing Legs (pads extend down to y = +19)
-      ctx.strokeStyle = '#ab897f';
+      // Landing Legs
+      ctx.strokeStyle = '#7A8AA0';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.moveTo(-9, 6);
@@ -446,19 +444,9 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       ctx.lineTo(18, 19);
       ctx.stroke();
 
-      // Foot pads
-      ctx.strokeStyle = '#e5e2e3';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-22, 19);
-      ctx.lineTo(-14, 19);
-      ctx.moveTo(14, 19);
-      ctx.lineTo(22, 19);
-      ctx.stroke();
-
       // Engine Thruster Flame
       if (s.throttle > 0.05 && s.fuelKg > 0) {
-        ctx.fillStyle = s.throttle > 0.5 ? '#ff5a1f' : '#ffba3b';
+        ctx.fillStyle = s.throttle > 0.5 ? '#FF5A1F' : '#E8920A';
         ctx.beginPath();
         ctx.moveTo(-6, 8);
         ctx.lineTo(6, 8);
@@ -470,12 +458,12 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       ctx.restore();
 
       // 5. Mission route preview with a live vehicle marker.
-      ctx.fillStyle = 'rgba(28, 27, 28, 0.94)';
+      ctx.fillStyle = 'rgba(17, 22, 32, 0.88)';
       ctx.fillRect(326, 16, 858, 126);
-      ctx.strokeStyle = '#2a2a2b';
+      ctx.strokeStyle = '#1E2A3E';
       ctx.strokeRect(326, 16, 858, 126);
-      ctx.font = '10px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#ab897f';
+      ctx.font = '10px monospace';
+      ctx.fillStyle = '#7A8AA0';
       ctx.fillText(`MISSION PATH  ·  EARTH → ${body.name.toUpperCase()}`, 342, 34);
       const routeStartX = 390;
       const routeEndX = 1110;
@@ -493,7 +481,7 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
         y: (1 - t) ** 2 * routeY + 2 * (1 - t) * t * routeControlY + t ** 2 * routeY,
       });
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#2a2a2b';
+      ctx.strokeStyle = '#34445a';
       ctx.beginPath();
       for (let index = 0; index <= 40; index += 1) {
         const point = routePoint(index / 40);
@@ -501,7 +489,7 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
         else ctx.lineTo(point.x, point.y);
       }
       ctx.stroke();
-      ctx.strokeStyle = '#ff5a1f';
+      ctx.strokeStyle = '#ff7b32';
       ctx.beginPath();
       for (let index = 0; index <= 40 * routeProgress; index += 1) {
         const point = routePoint(index / 40);
@@ -510,130 +498,98 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       }
       ctx.stroke();
       const routeMarker = routePoint(routeProgress);
-      ctx.fillStyle = '#ff5a1f';
+      ctx.fillStyle = '#ff7b32';
       ctx.beginPath();
       ctx.arc(routeMarker.x, routeMarker.y, 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#61dda0';
+      ctx.fillStyle = '#4aa5ff';
       ctx.beginPath();
       ctx.arc(routeStartX - 18, routeY, 12, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = body.id === 'mars' ? '#c45e4d' : body.id === 'venus' ? '#d2a84c' : '#ab897f';
+      ctx.fillStyle = body.id === 'mars' ? '#c45e4d' : body.id === 'venus' ? '#d2a84c' : '#a9bdcf';
       ctx.beginPath();
       ctx.arc(routeEndX + 5, routeY, 10, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#e5e2e3';
+      ctx.fillStyle = '#aebbd0';
       ctx.fillText('EARTH', routeStartX - 34, 119);
       ctx.fillText(`${body.name.toUpperCase()} SURFACE`, routeEndX - 45, 119);
-      ctx.fillStyle = '#ffba3b';
+      ctx.fillStyle = '#ffb26b';
       ctx.textAlign = 'right';
       ctx.fillText(s.phase.toUpperCase(), 1168, 34);
       ctx.textAlign = 'start';
 
       // 6. Telemetry HUD Overlay (Top-Left)
-      ctx.fillStyle = 'rgba(28, 27, 28, 0.94)';
-      ctx.fillRect(16, 16, 300, 218);
-      ctx.strokeStyle = '#2a2a2b';
+      ctx.fillStyle = 'rgba(17, 22, 32, 0.85)';
+      ctx.fillRect(16, 16, 290, 190);
+      ctx.strokeStyle = '#1E2A3E';
       ctx.lineWidth = 1;
-      ctx.strokeRect(16, 16, 300, 218);
+      ctx.strokeRect(16, 16, 290, 190);
 
       // Header in HUD
-      ctx.font = '10px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#ab897f';
+      ctx.font = '10px monospace';
+      ctx.fillStyle = '#4E5C72';
       ctx.fillText(`${s.phase.toUpperCase()} TELEMETRY`, 26, 32);
 
-      ctx.font = '12px "JetBrains Mono", monospace';
+      ctx.font = '12px monospace';
 
       // Altitude
-      ctx.fillStyle = '#ab897f';
-      ctx.fillText('ALTITUDE :', 26, 52);
-      ctx.fillStyle = '#e5e2e3';
-      ctx.fillText(formatDistance(s.yM), 120, 52);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('ALTITUDE :', 26, 54);
+      ctx.fillStyle = '#E8EAF0';
+      ctx.fillText(formatDistance(s.yM), 120, 54);
 
       // Vertical Speed (color-coded)
       const vSafe = isAscent || isTransit || Math.abs(s.vyMs) <= stats.touchdownLimits.maxVyMs;
-      ctx.fillStyle = '#ab897f';
-      ctx.fillText('V-SPEED  :', 26, 72);
-      ctx.fillStyle = vSafe ? '#61dda0' : '#e03535';
-      ctx.fillText(formatSpeed(s.vyMs), 120, 72);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('V-SPEED  :', 26, 76);
+      ctx.fillStyle = vSafe ? '#1FA971' : '#E03535';
+      ctx.fillText(formatSpeed(s.vyMs), 120, 76);
 
       // Horizontal Speed
       const hSafe = isAscent || isTransit || Math.abs(s.vxMs) <= stats.touchdownLimits.maxVxMs;
-      ctx.fillStyle = '#ab897f';
-      ctx.fillText('H-SPEED  :', 26, 92);
-      ctx.fillStyle = hSafe ? '#61dda0' : '#e03535';
-      ctx.fillText(formatSpeed(s.vxMs), 120, 92);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('H-SPEED  :', 26, 98);
+      ctx.fillStyle = hSafe ? '#1FA971' : '#E03535';
+      ctx.fillText(formatSpeed(s.vxMs), 120, 98);
 
       // Tilt
       const tiltSafe = Math.abs(s.tiltDeg) <= stats.touchdownLimits.maxTiltDeg;
-      ctx.fillStyle = '#ab897f';
-      ctx.fillText('TILT     :', 26, 112);
-      ctx.fillStyle = tiltSafe ? '#61dda0' : '#e03535';
-      ctx.fillText(formatAngleDeg(s.tiltDeg), 120, 112);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('TILT     :', 26, 120);
+      ctx.fillStyle = tiltSafe ? '#1FA971' : '#E03535';
+      ctx.fillText(formatAngleDeg(s.tiltDeg), 120, 120);
 
-      // Fuel & Horizontal Gauge Bar
+      // Fuel & Throttle
       const fuelPct = stats.fuelMassKg > 0 ? s.fuelKg / stats.fuelMassKg : 0;
-      const fuelColor = fuelPct > 0.3 ? '#61dda0' : fuelPct > 0.1 ? '#ffba3b' : '#ff5a1f';
-      ctx.fillStyle = '#ab897f';
-      ctx.fillText('FUEL     :', 26, 132);
-      ctx.fillStyle = fuelColor;
-      ctx.fillText(`${s.fuelKg.toFixed(0)} kg (${formatPercent(fuelPct)})`, 120, 132);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('FUEL     :', 26, 142);
+      ctx.fillStyle = s.fuelKg > 20 ? '#3A8EF6' : '#E03535';
+      ctx.fillText(`${s.fuelKg.toFixed(0)} kg (${formatPercent(fuelPct)})`, 120, 142);
 
-      // Horizontal Fuel Gauge Bar
-      const fBarX = 26;
-      const fBarY = 140;
-      const fBarW = 278;
-      const fBarH = 6;
-      ctx.fillStyle = '#0e0e0f';
-      ctx.fillRect(fBarX, fBarY, fBarW, fBarH);
-      ctx.strokeStyle = '#2a2a2b';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(fBarX, fBarY, fBarW, fBarH);
-
-      // Fill with subtle pulse when fuel < 10%
-      let pulseAlpha = 1.0;
-      if (fuelPct < 0.1 && typeof window !== 'undefined' && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
-        pulseAlpha = 0.5 + 0.5 * Math.sin(Date.now() / 150);
-      }
-      ctx.fillStyle = fuelColor;
-      ctx.globalAlpha = pulseAlpha;
-      ctx.fillRect(fBarX + 1, fBarY + 1, Math.max(0, (fBarW - 2) * Math.min(1, fuelPct)), fBarH - 2);
-      ctx.globalAlpha = 1.0;
-
-      // 10% low-fuel threshold marker
-      const markerX = fBarX + fBarW * 0.1;
-      ctx.strokeStyle = '#ff5a1f';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(markerX, fBarY - 2);
-      ctx.lineTo(markerX, fBarY + fBarH + 2);
-      ctx.stroke();
-
-      // Throttle
-      ctx.fillStyle = '#ab897f';
-      ctx.fillText('THROTTLE :', 26, 166);
-      ctx.fillStyle = '#ff5a1f';
-      ctx.fillText(formatPercent(s.throttle), 120, 166);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('THROTTLE :', 26, 164);
+      ctx.fillStyle = '#FF5A1F';
+      ctx.fillText(formatPercent(s.throttle), 120, 164);
 
       // Heat
-      ctx.fillStyle = '#ab897f';
-      ctx.fillText('THERMAL  :', 26, 188);
-      ctx.fillStyle = s.heatMJ > 5 ? '#e03535' : s.heatMJ > 1 ? '#ffba3b' : '#61dda0';
-      ctx.fillText(`${s.heatMJ.toFixed(1)} MJ`, 120, 188);
+      ctx.fillStyle = '#7A8AA0';
+      ctx.fillText('THERMAL  :', 26, 186);
+      ctx.fillStyle = s.heatMJ > 5 ? '#E03535' : s.heatMJ > 1 ? '#E8920A' : '#1FA971';
+      ctx.fillText(`${s.heatMJ.toFixed(1)} MJ`, 120, 186);
 
       // Flight State Status Banner on Landing / Crash
       if (s.phase === 'landed' || s.phase === 'crashed') {
         const ring = ringForDistance(Math.abs(s.xM), state.save.difficulty);
         const isSoft = s.phase === 'landed';
 
-        ctx.fillStyle = isSoft ? 'rgba(97, 221, 160, 0.92)' : 'rgba(224, 53, 53, 0.92)';
+        ctx.fillStyle = isSoft ? 'rgba(31, 169, 113, 0.92)' : 'rgba(224, 53, 53, 0.92)';
         ctx.fillRect(w / 2 - 220, h / 2 - 50, 440, 100);
-        ctx.strokeStyle = isSoft ? '#61dda0' : '#e03535';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = isSoft ? '#1FA971' : '#E03535';
+        ctx.lineWidth = 2;
         ctx.strokeRect(w / 2 - 220, h / 2 - 50, 440, 100);
 
-        ctx.fillStyle = isSoft ? '#0e0e0f' : '#ffffff';
-        ctx.font = 'bold 18px "Geist", sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px monospace';
         ctx.textAlign = 'center';
         ctx.fillText(
           isSoft ? 'TOUCHDOWN CONFIRMED' : 'MISSION FAILURE: CRASH',
@@ -641,16 +597,16 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
           h / 2 - 16
         );
 
-        ctx.font = '12px "JetBrains Mono", monospace';
-        ctx.fillStyle = isSoft ? '#1c1b1c' : '#f8fafc';
+        ctx.font = '13px monospace';
+        ctx.fillStyle = '#f8fafc';
         ctx.fillText(
           `V-Speed: ${s.vyMs.toFixed(1)} m/s | Ring: ${ring} (Dist: ${Math.abs(s.xM).toFixed(1)}m)`,
           w / 2,
           h / 2 + 14
         );
 
-        ctx.font = '11px "Geist", sans-serif';
-        ctx.fillStyle = isSoft ? '#2a2a2b' : '#cbd5e1';
+        ctx.font = '11px sans-serif';
+        ctx.fillStyle = '#cbd5e1';
         ctx.fillText(
           isSoft ? 'Select "Deploy Surface Operations" below to begin scavenging.' : 'Select "View Incident Report" below to debrief.',
           w / 2,

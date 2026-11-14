@@ -16,15 +16,19 @@ export interface PartMountProfile {
   partCategory: PartCategory;
   /** Primary mounting point of this part itself (where it attaches) */
   attachPoint: { relX: number; relY: number; facing: FacingDirection };
-  /** Available docking/mounting points this part provides for child components (1-2 axial + optional radial ring) */
+  /** Available docking/mounting points this part provides for child components */
   childMountPoints: MountPointDef[];
 }
 
 /**
- * Mounting point definitions per part category.
- * Complies with the 1-2 primary axial mounting points specification,
- * with structural parts (hull, tank) exposing a dual radial ring (left/right)
- * for mirrored accessories (legs, solar, RCS, instruments).
+ * Standard named mounting slots per Round 3 specification:
+ * Every host part (bus, tank) exposes:
+ * - top
+ * - bottom
+ * - upper-left
+ * - upper-right
+ * - lower-left
+ * - lower-right
  */
 export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
   hull: {
@@ -41,45 +45,47 @@ export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
       },
       {
         id: 'bottom',
-        name: 'Lower Interstage Deck',
+        name: 'Lower Thrust & Interstage',
         relX: 0,
         relY: 45,
         facing: 'bottom',
         allowedCategories: ['tank', 'engine', 'heatshield'],
       },
       {
-        id: 'radial-left',
-        name: 'Port Radial Bay',
+        id: 'upper-left',
+        name: 'Upper Port Equipment Bay',
         relX: -45,
-        relY: -5,
+        relY: -15,
         facing: 'left',
-        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer', 'leg'],
+        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer'],
         isRadial: true,
       },
       {
-        id: 'radial-right',
-        name: 'Starboard Radial Bay',
+        id: 'upper-right',
+        name: 'Upper Starboard Equipment Bay',
         relX: 45,
-        relY: -5,
+        relY: -15,
         facing: 'right',
-        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer', 'leg'],
+        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer'],
         isRadial: true,
       },
       {
-        id: 'top-port',
-        name: 'Top Port Standoff',
-        relX: -20,
-        relY: -50,
-        facing: 'top',
-        allowedCategories: ['instrument', 'comms', 'computer'],
+        id: 'lower-left',
+        name: 'Lower Port Landing Bay',
+        relX: -50,
+        relY: 25,
+        facing: 'left',
+        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
+        isRadial: true,
       },
       {
-        id: 'top-stbd',
-        name: 'Top Starboard Standoff',
-        relX: 20,
-        relY: -50,
-        facing: 'top',
-        allowedCategories: ['instrument', 'comms', 'computer'],
+        id: 'lower-right',
+        name: 'Lower Starboard Landing Bay',
+        relX: 50,
+        relY: 25,
+        facing: 'right',
+        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
+        isRadial: true,
       },
     ],
   },
@@ -97,60 +103,69 @@ export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
       },
       {
         id: 'bottom',
-        name: 'Center Thrust Mount',
+        name: 'Primary Thrust Structure',
         relX: 0,
-        relY: 45,
+        relY: 55,
         facing: 'bottom',
         allowedCategories: ['engine', 'tank', 'heatshield'],
       },
+      // Engine cluster expansion mounts (sharing bottom thrust structure up to 4 engines)
       {
-        id: 'engine-port',
-        name: 'Port Thrust Mount',
-        relX: -25,
-        relY: 45,
+        id: 'bottom-2',
+        name: 'Port Engine Cluster Mount',
+        relX: -26,
+        relY: 55,
         facing: 'bottom',
-        allowedCategories: ['engine', 'rcs'],
+        allowedCategories: ['engine'],
       },
       {
-        id: 'engine-stbd',
-        name: 'Starboard Thrust Mount',
-        relX: 25,
-        relY: 45,
+        id: 'bottom-3',
+        name: 'Starboard Engine Cluster Mount',
+        relX: 26,
+        relY: 55,
         facing: 'bottom',
-        allowedCategories: ['engine', 'rcs'],
+        allowedCategories: ['engine'],
       },
       {
-        id: 'radial-left',
-        name: 'Port Outrigger Bay',
-        relX: -50,
-        relY: 20,
-        facing: 'left',
-        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
-        isRadial: true,
+        id: 'bottom-4',
+        name: 'Aft Engine Center Cluster Mount',
+        relX: 0,
+        relY: 65,
+        facing: 'bottom',
+        allowedCategories: ['engine'],
       },
       {
-        id: 'radial-right',
-        name: 'Starboard Outrigger Bay',
-        relX: 50,
-        relY: 20,
-        facing: 'right',
-        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
-        isRadial: true,
-      },
-      {
-        id: 'radial-left-upper',
-        name: 'Upper Port Bay',
+        id: 'upper-left',
+        name: 'Upper Port Equipment Bay',
         relX: -45,
         relY: -15,
         facing: 'left',
+        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer'],
+        isRadial: true,
+      },
+      {
+        id: 'upper-right',
+        name: 'Upper Starboard Equipment Bay',
+        relX: 45,
+        relY: -15,
+        facing: 'right',
+        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer'],
+        isRadial: true,
+      },
+      {
+        id: 'lower-left',
+        name: 'Lower Port Landing Outrigger',
+        relX: -55,
+        relY: 30,
+        facing: 'left',
         allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
         isRadial: true,
       },
       {
-        id: 'radial-right-upper',
-        name: 'Upper Starboard Bay',
-        relX: 45,
-        relY: -15,
+        id: 'lower-right',
+        name: 'Lower Starboard Landing Outrigger',
+        relX: 55,
+        relY: 30,
         facing: 'right',
         allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
         isRadial: true,
@@ -160,7 +175,7 @@ export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
   engine: {
     partCategory: 'engine',
     attachPoint: { relX: 0, relY: -20, facing: 'top' },
-    childMountPoints: [], // Engines do not provide child mounts
+    childMountPoints: [],
   },
   leg: {
     partCategory: 'leg',
@@ -216,6 +231,16 @@ export interface PartPlacement {
   canvasY: number;
 }
 
+export interface MountSlotInfo {
+  parentInstanceId: string;
+  mountPointId: string;
+  name: string;
+  canvasX: number;
+  canvasY: number;
+  facing: FacingDirection;
+  allowedCategories: PartCategory[];
+}
+
 /**
  * Loads UI-only mount assignments from localStorage.
  */
@@ -243,24 +268,18 @@ export function saveMountMap(map: Record<string, string>): void {
 
 /**
  * Auto-resolves layout for the entire spacecraft from design.parts.
- * If UI map is missing or stale, sequentially places parts into free compatible slots.
+ * Prioritizes structural stacking (hull -> tank -> attachments), enforces
+ * named slots, and supports mirrored legs and engine clusters.
  */
 export function resolveAssemblyLayout(
   parts: PartInstance[],
   catalog: PartDef[],
-  originX = 180,
-  originY = 180
+  originX = 200,
+  originY = 200
 ): {
   placements: PartPlacement[];
   unmounted: PartInstance[];
-  availableSlots: Array<{
-    parentInstanceId: string;
-    mountPointId: string;
-    canvasX: number;
-    canvasY: number;
-    facing: FacingDirection;
-    allowedCategories: PartCategory[];
-  }>;
+  availableSlots: MountSlotInfo[];
 } {
   const mountMap = loadMountMap();
   const placements: PartPlacement[] = [];
@@ -296,18 +315,19 @@ export function resolveAssemblyLayout(
     });
   }
 
+  // Placement priority: structural stack parts first, then power/avionics, then engines & legs
   const categoryPriority: Record<PartCategory, number> = {
     hull: 1,
     tank: 2,
     heatshield: 3,
-    engine: 4,
+    comms: 4,
     parachute: 5,
     power: 6,
-    rcs: 7,
-    leg: 8,
-    comms: 9,
-    computer: 10,
-    instrument: 11,
+    computer: 7,
+    instrument: 8,
+    rcs: 9,
+    engine: 10,
+    leg: 11,
   };
 
   const remainingParts = parts
@@ -320,9 +340,32 @@ export function resolveAssemblyLayout(
       return prioA - prioB;
     });
 
+  // Slot preference order by category
+  const preferredSlotOrder = (category: PartCategory): string[] => {
+    switch (category) {
+      case 'leg':
+        return ['lower-left', 'lower-right', 'radial-left', 'radial-right'];
+      case 'engine':
+        return ['bottom', 'bottom-2', 'bottom-3', 'bottom-4', 'engine-port', 'engine-stbd'];
+      case 'comms':
+        return ['top', 'upper-left', 'upper-right'];
+      case 'parachute':
+        return ['top', 'upper-left', 'upper-right'];
+      case 'power':
+      case 'rcs':
+      case 'instrument':
+      case 'computer':
+        return ['upper-left', 'upper-right', 'lower-left', 'lower-right', 'top'];
+      case 'tank':
+      case 'heatshield':
+        return ['bottom', 'top'];
+      default:
+        return ['bottom', 'top', 'upper-left', 'upper-right', 'lower-left', 'lower-right'];
+    }
+  };
+
   // Iterate over remaining parts and place them onto available mounts
   for (const part of remainingParts) {
-
     const def = catalog.find((d) => d.id === part.partId);
     if (!def) continue;
 
@@ -353,11 +396,21 @@ export function resolveAssemblyLayout(
       }
     }
 
-    // 2. If not placed, auto-assign to first free compatible mounting point
+    // 2. If not placed, auto-assign following preferred slot order
     if (!placed) {
+      const prefs = preferredSlotOrder(cat);
       for (const parentPlacement of placements) {
         const parentProfile = MOUNT_PROFILES[parentPlacement.category];
-        for (const slot of parentProfile.childMountPoints) {
+        // Sort candidate child slots by preference
+        const sortedSlots = [...parentProfile.childMountPoints].sort((sA, sB) => {
+          const idxA = prefs.indexOf(sA.id);
+          const idxB = prefs.indexOf(sB.id);
+          const valA = idxA === -1 ? 999 : idxA;
+          const valB = idxB === -1 ? 999 : idxB;
+          return valA - valB;
+        });
+
+        for (const slot of sortedSlots) {
           const slotKey = `${parentPlacement.instanceId}:${slot.id}`;
           if (!occupiedSlots.has(slotKey) && slot.allowedCategories.includes(cat)) {
             occupiedSlots.add(slotKey);
@@ -386,15 +439,8 @@ export function resolveAssemblyLayout(
 
   saveMountMap(mountMap);
 
-  // Compute all remaining available slots on canvas for drag-drop highlights
-  const availableSlots: Array<{
-    parentInstanceId: string;
-    mountPointId: string;
-    canvasX: number;
-    canvasY: number;
-    facing: FacingDirection;
-    allowedCategories: PartCategory[];
-  }> = [];
+  // Compute all remaining available slots on canvas for drag-drop and hover highlights
+  const availableSlots: MountSlotInfo[] = [];
 
   for (const parent of placements) {
     const profile = MOUNT_PROFILES[parent.category];
@@ -404,6 +450,7 @@ export function resolveAssemblyLayout(
         availableSlots.push({
           parentInstanceId: parent.instanceId,
           mountPointId: slot.id,
+          name: slot.name,
           canvasX: parent.canvasX + slot.relX,
           canvasY: parent.canvasY + slot.relY,
           facing: slot.facing,
@@ -414,4 +461,46 @@ export function resolveAssemblyLayout(
   }
 
   return { placements, unmounted, availableSlots };
+}
+
+/**
+ * Returns all currently free, compatible mounting slots for a part definition.
+ * Used for hover highlights, ghost preview, and slot capacity limits.
+ */
+export function getAvailableSlotsForPart(
+  def: PartDef,
+  currentParts: PartInstance[],
+  catalog: PartDef[]
+): MountSlotInfo[] {
+  // If ship is currently empty: hull or tank can start the ship
+  if (currentParts.length === 0) {
+    if (def.category === 'hull' || def.category === 'tank') {
+      return [
+        {
+          parentInstanceId: 'root',
+          mountPointId: 'core',
+          name: 'PRIMARY CHASSIS CORE',
+          canvasX: 200,
+          canvasY: 200,
+          facing: 'bottom',
+          allowedCategories: [def.category],
+        },
+      ];
+    }
+    return []; // Non-structural parts cannot float without a hull or tank
+  }
+
+  const { availableSlots } = resolveAssemblyLayout(currentParts, catalog);
+  return availableSlots.filter((slot) => slot.allowedCategories.includes(def.category));
+}
+
+/**
+ * Checks whether the spacecraft currently has capacity to install the given part.
+ */
+export function canAddPart(
+  def: PartDef,
+  currentParts: PartInstance[],
+  catalog: PartDef[]
+): boolean {
+  return getAvailableSlotsForPart(def, currentParts, catalog).length > 0;
 }
