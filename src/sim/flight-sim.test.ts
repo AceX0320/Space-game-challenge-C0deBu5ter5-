@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { classifyTouchdown, ringForDistance } from './landing';
 import { atmosphericDensity, dragForce } from './atmosphere';
 import { rollMalfunctions } from './malfunctions';
-import { createFlightSim, autoFly } from './flight-sim';
+import {
+  createFlightSim,
+  autoFly,
+  LAUNCH_TARGET_ALTITUDE_M,
+  TARGET_APPROACH_ALTITUDE_M,
+} from './flight-sim';
 import { computePayout } from '@/economy/payout';
 import { simulateScavenge } from '@/economy/scavenge';
 import { generateReport } from '@/report/generate-report';
@@ -99,6 +104,30 @@ describe('createFlightSim + autoFly Integration Tests', () => {
     solarFlux: 1.0,
   };
 
+  it('starts on Earth and requires throttle before transferring to the destination', () => {
+    const sim = createFlightSim(moonShipStats, moonBody, 'normal', 42);
+    expect(sim.state.phase).toBe('ascent');
+    expect(sim.state.yM).toBe(0);
+
+    for (let i = 0; i < 20; i += 1) {
+      sim.step(0.05, { throttle: 0, pitchRate: 0, rcs: 0, deployParachute: false });
+    }
+    expect(sim.state.phase).toBe('ascent');
+    expect(sim.state.yM).toBe(0);
+
+    for (let i = 0; i < 2_000 && sim.state.phase === 'ascent'; i += 1) {
+      sim.step(0.05, { throttle: 1, pitchRate: 0, rcs: 0, deployParachute: false });
+    }
+    expect(sim.state.phase, JSON.stringify(sim.state)).toBe('transit');
+    expect(sim.state.yM).toBe(LAUNCH_TARGET_ALTITUDE_M);
+
+    for (let i = 0; i < 200 && sim.state.phase === 'transit'; i += 1) {
+      sim.step(0.05, { throttle: 0, pitchRate: 0, rcs: 0, deployParachute: false });
+    }
+    expect(sim.state.phase).toBe('descent');
+    expect(sim.state.yM).toBe(TARGET_APPROACH_ALTITUDE_M);
+  });
+
   it('1. Determinism: same stats, body, difficulty, and seed produce identical FlightResult twice', () => {
     const sim1 = createFlightSim(moonShipStats, moonBody, 'normal', 12345);
     const result1 = autoFly(sim1);
@@ -118,7 +147,7 @@ describe('createFlightSim + autoFly Integration Tests', () => {
     const sim = createFlightSim(moonShipStats, moonBody, 'normal', 42);
     const result = autoFly(sim);
 
-    expect(result.outcome).toBe('soft');
+    expect(result.outcome, JSON.stringify({ state: sim.state, events: result.events })).toBe('soft');
     expect(sim.isDone()).toBe(true);
     expect(Math.abs(result.touchdownVyMs)).toBeLessThanOrEqual(
       moonShipStats.touchdownLimits.maxVyMs
@@ -141,9 +170,7 @@ describe('createFlightSim + autoFly Integration Tests', () => {
     const result = autoFly(sim);
 
     expect(result.outcome).toBe('crash');
-    expect(Math.abs(result.touchdownVyMs)).toBeGreaterThan(
-      underpoweredStats.touchdownLimits.maxVyMs
-    );
+    expect(result.events.some((event) => event.text.includes('Launch failed'))).toBe(true);
   });
 
   it('4. FlightResult from real sim flows cleanly through computePayout and generateReport', () => {

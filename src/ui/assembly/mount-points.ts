@@ -37,7 +37,7 @@ export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
         relX: 0,
         relY: -55,
         facing: 'top',
-        allowedCategories: ['parachute', 'comms', 'instrument'],
+        allowedCategories: ['parachute', 'comms', 'instrument', 'computer'],
       },
       {
         id: 'bottom',
@@ -47,14 +47,13 @@ export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
         facing: 'bottom',
         allowedCategories: ['tank', 'engine', 'heatshield'],
       },
-      // Radial ring slots for hull
       {
         id: 'radial-left',
         name: 'Port Radial Bay',
         relX: -45,
         relY: -5,
         facing: 'left',
-        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer'],
+        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer', 'leg'],
         isRadial: true,
       },
       {
@@ -63,8 +62,24 @@ export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
         relX: 45,
         relY: -5,
         facing: 'right',
-        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer'],
+        allowedCategories: ['power', 'comms', 'instrument', 'rcs', 'computer', 'leg'],
         isRadial: true,
+      },
+      {
+        id: 'top-port',
+        name: 'Top Port Standoff',
+        relX: -20,
+        relY: -50,
+        facing: 'top',
+        allowedCategories: ['instrument', 'comms', 'computer'],
+      },
+      {
+        id: 'top-stbd',
+        name: 'Top Starboard Standoff',
+        relX: 20,
+        relY: -50,
+        facing: 'top',
+        allowedCategories: ['instrument', 'comms', 'computer'],
       },
     ],
   },
@@ -82,29 +97,62 @@ export const MOUNT_PROFILES: Record<PartCategory, PartMountProfile> = {
       },
       {
         id: 'bottom',
-        name: 'Thrust Structure Mount',
+        name: 'Center Thrust Mount',
         relX: 0,
         relY: 45,
         facing: 'bottom',
         allowedCategories: ['engine', 'tank', 'heatshield'],
       },
-      // Radial ring slots for tanks (lander legs, RCS, solar)
+      {
+        id: 'engine-port',
+        name: 'Port Thrust Mount',
+        relX: -25,
+        relY: 45,
+        facing: 'bottom',
+        allowedCategories: ['engine', 'rcs'],
+      },
+      {
+        id: 'engine-stbd',
+        name: 'Starboard Thrust Mount',
+        relX: 25,
+        relY: 45,
+        facing: 'bottom',
+        allowedCategories: ['engine', 'rcs'],
+      },
       {
         id: 'radial-left',
-        name: 'Port Landing Outrigger',
+        name: 'Port Outrigger Bay',
         relX: -50,
         relY: 20,
         facing: 'left',
-        allowedCategories: ['leg', 'rcs', 'power'],
+        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
         isRadial: true,
       },
       {
         id: 'radial-right',
-        name: 'Starboard Landing Outrigger',
+        name: 'Starboard Outrigger Bay',
         relX: 50,
         relY: 20,
         facing: 'right',
-        allowedCategories: ['leg', 'rcs', 'power'],
+        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
+        isRadial: true,
+      },
+      {
+        id: 'radial-left-upper',
+        name: 'Upper Port Bay',
+        relX: -45,
+        relY: -15,
+        facing: 'left',
+        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
+        isRadial: true,
+      },
+      {
+        id: 'radial-right-upper',
+        name: 'Upper Starboard Bay',
+        relX: 45,
+        relY: -15,
+        facing: 'right',
+        allowedCategories: ['leg', 'rcs', 'power', 'instrument', 'computer'],
         isRadial: true,
       },
     ],
@@ -248,9 +296,32 @@ export function resolveAssemblyLayout(
     });
   }
 
+  const categoryPriority: Record<PartCategory, number> = {
+    hull: 1,
+    tank: 2,
+    heatshield: 3,
+    engine: 4,
+    parachute: 5,
+    power: 6,
+    rcs: 7,
+    leg: 8,
+    comms: 9,
+    computer: 10,
+    instrument: 11,
+  };
+
+  const remainingParts = parts
+    .filter((p) => !rootInstance || p.instanceId !== rootInstance.instanceId)
+    .sort((a, b) => {
+      const defA = catalog.find((d) => d.id === a.partId);
+      const defB = catalog.find((d) => d.id === b.partId);
+      const prioA = defA ? categoryPriority[defA.category] ?? 99 : 99;
+      const prioB = defB ? categoryPriority[defB.category] ?? 99 : 99;
+      return prioA - prioB;
+    });
+
   // Iterate over remaining parts and place them onto available mounts
-  for (const part of parts) {
-    if (rootInstance && part.instanceId === rootInstance.instanceId) continue;
+  for (const part of remainingParts) {
 
     const def = catalog.find((d) => d.id === part.partId);
     if (!def) continue;

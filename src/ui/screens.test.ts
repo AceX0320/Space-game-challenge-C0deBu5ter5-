@@ -42,6 +42,33 @@ describe('UI Screen Rendering Tests (JSDOM)', () => {
     expect(root.textContent).toContain('Installed Hardware');
   });
 
+  it('updates the live spacecraft preview when a part is added', () => {
+    renderHangar(root, getStore().getState());
+    const preview = (): NodeListOf<SVGElement> =>
+      root.querySelectorAll('svg[data-craft-preview] [data-preview-part]');
+    const before = preview().length;
+    const addEngine = root.querySelector<HTMLButtonElement>('[data-add="engine-merlin-class"]');
+
+    expect(addEngine).not.toBeNull();
+    addEngine!.click();
+
+    expect(preview()).toHaveLength(before + 1);
+  });
+
+  it('updates the live spacecraft preview when a tank is tuned', () => {
+    renderHangar(root, getStore().getState());
+    root.querySelector<HTMLElement>('[data-inst-id="tank-1"]')?.click();
+    const volumeSlider = root.querySelector<HTMLInputElement>(
+      'input[data-param="volume"][data-inst="tank-1"]'
+    );
+
+    expect(volumeSlider).not.toBeNull();
+    volumeSlider!.value = '4';
+    volumeSlider!.dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect(root.querySelector('[data-preview-tank]')?.getAttribute('data-tank-volume')).toBe('4.00');
+  });
+
   it('renders Preflight screen cleanly', () => {
     const state = getStore().getState();
     renderPreflight(root, state);
@@ -53,6 +80,9 @@ describe('UI Screen Rendering Tests (JSDOM)', () => {
     const state = getStore().getState();
     renderFlight(root, state);
     expect(root.querySelector('canvas')).toBeTruthy();
+    expect(root.querySelector('[data-hold="thrust"]')).toBeTruthy();
+    expect(root.querySelector('[data-analog-throttle]')).toBeTruthy();
+    expect(root.textContent).toContain('Hold throttle to launch from Earth');
   });
 
   it('renders Scavenge screen cleanly', () => {

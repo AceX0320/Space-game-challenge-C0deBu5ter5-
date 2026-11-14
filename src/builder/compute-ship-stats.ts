@@ -28,6 +28,8 @@ export function computeShipStats(design: ShipDesign, catalog: PartDef[], body: B
   let dataGenKbps = 0;
   let downlinkKbps = 0;
   let thrustN = 0;
+  let dragAreaM2 = 6;
+  let parachuteAreaM2 = 0;
   let ispS = 282;
   let reliabilityProduct = 1;
   let controlSum = 0;
@@ -62,6 +64,13 @@ export function computeShipStats(design: ShipDesign, catalog: PartDef[], body: B
     if (def.stats.batteryWh) batteryWh += def.stats.batteryWh * capacityParam;
     if (def.stats.downlinkKbps) downlinkKbps += def.stats.downlinkKbps * sizeParam;
     if (def.stats.dataRateKbps) dataGenKbps += def.stats.dataRateKbps;
+    if (def.stats.dragAreaM2) {
+      if (def.category === 'parachute') {
+        parachuteAreaM2 += def.stats.dragAreaM2 * sizeParam;
+      } else if (def.category === 'heatshield') {
+        dragAreaM2 += def.stats.dragAreaM2 * sizeParam;
+      }
+    }
     if (def.stats.thrustN) {
       thrustN += def.stats.thrustN * thrustScaleParam * countParam;
       if (def.stats.ispS) ispS = def.stats.ispS * ispScaleParam;
@@ -107,6 +116,8 @@ export function computeShipStats(design: ShipDesign, catalog: PartDef[], body: B
     dataGenKbps,
     downlinkKbps,
     dataBufferMB,
+    dragAreaM2,
+    parachuteAreaM2,
     costM,
     reliability: Math.pow(reliabilityProduct, 1 / Math.max(1, design.parts.length)),
     controlAuthority: Math.min(1, controlSum / 3),

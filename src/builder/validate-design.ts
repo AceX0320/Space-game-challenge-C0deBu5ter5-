@@ -19,6 +19,14 @@ export function validateDesign(design: ShipDesign, stats: ShipStats, contract: C
       `Thrust-to-weight ratio ${stats.twr.toFixed(2)} is below 1.0 — cannot land on ${contract.bodyId}`
     );
   }
+  const earthTwr = stats.totalMassKg > 0
+    ? stats.thrustN / (stats.totalMassKg * 9.81)
+    : 0;
+  if (earthTwr < 1.0) {
+    violations.push(
+      `Earth launch thrust-to-weight ratio ${earthTwr.toFixed(2)} is below 1.0 — the spacecraft cannot lift off`
+    );
+  }
   if (stats.deltaVms < 200) {
     violations.push('Insufficient Δv — not enough fuel to complete the mission');
   }

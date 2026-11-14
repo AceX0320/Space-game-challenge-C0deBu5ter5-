@@ -89,6 +89,9 @@ export function renderPreflight(root: HTMLElement, state: GameState): void {
   // Two-column: checklist + stats
   const grid = document.createElement('div');
   grid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:var(--ls-sp-4);';
+  const earthTwr = stats.totalMassKg > 0
+    ? stats.thrustN / (stats.totalMassKg * 9.81)
+    : 0;
 
   // Checklist
   const checkPanel = document.createElement('div');
@@ -96,6 +99,7 @@ export function renderPreflight(root: HTMLElement, state: GameState): void {
   checkPanel.innerHTML = `
     <div class="ls-panel-header"><span class="ls-panel-title">Systems Check Matrix</span></div>
     <div class="ls-panel-body">
+      ${checkRow('Earth Launch TWR', `${earthTwr.toFixed(2)}×`, earthTwr >= 1.1 ? 'go' : earthTwr >= 1.0 ? 'warn' : 'nogo', 'Must be ≥ 1.0 to lift off from Earth')}
       ${checkRow('TWR (Thrust/Weight)', `${stats.twr.toFixed(2)}×`, stats.twr >= 1.1 ? 'go' : stats.twr >= 1.0 ? 'warn' : 'nogo', 'Must be ≥ 1.1 for safe descent')}
       ${checkRow('Delta-V Budget', `${stats.deltaVms.toFixed(0)} m/s`, stats.deltaVms >= 1500 ? 'go' : stats.deltaVms >= 500 ? 'warn' : 'nogo', 'Minimum recommended: 1500 m/s')}
       ${checkRow('Total Mass', `${(stats.totalMassKg / 1000).toFixed(2)} t`, 'go')}

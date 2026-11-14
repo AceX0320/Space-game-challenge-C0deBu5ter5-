@@ -438,10 +438,15 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
       if (!inst || !def) continue;
 
       const isSel = placement.instanceId === selectedPartInstanceId;
+      const isTank = def.category === 'tank';
+      const tankAttrs = isTank
+        ? `data-preview-tank data-tank-volume="${Number(inst.paramValues['volume'] ?? 1).toFixed(2)}"`
+        : '';
+
       partsSvg += `
         <g class="blueprint-part-group ${isSel ? 'is-selected' : ''}"
            transform="translate(${placement.canvasX}, ${placement.canvasY})"
-           data-inst-id="${placement.instanceId}" tabindex="0" role="button"
+           data-instance-id="${placement.instanceId}" data-preview-part ${tankAttrs} tabindex="0" role="button"
            aria-label="${def.name}">
           ${renderPartSvg(inst, def, isSel)}
         </g>
@@ -487,7 +492,7 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
     }
 
     blueprintContainer.innerHTML = `
-      <svg id="blueprint-svg" viewBox="0 0 400 480" width="100%" height="100%"
+      <svg id="blueprint-svg" data-craft-preview viewBox="0 0 400 480" width="100%" height="100%"
            xmlns="http://www.w3.org/2000/svg" style="max-height: 100%; display: block;">
         <defs>
           <pattern id="bp-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -860,10 +865,10 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
       return;
     }
 
-    // 2. Select part from blueprint
-    const bpPart = (e.target as HTMLElement).closest('[data-inst-id]') as HTMLElement | null;
+    // 2. Select part from blueprint or hardware strip
+    const bpPart = (e.target as HTMLElement).closest('[data-inst-id], [data-instance-id]') as HTMLElement | null;
     if (bpPart) {
-      const id = bpPart.dataset['instId'];
+      const id = bpPart.dataset['instId'] ?? bpPart.dataset['instanceId'];
       if (id) {
         selectedPartInstanceId = id;
         renderBlueprint();
@@ -904,6 +909,7 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
 
     inst.paramValues = { ...inst.paramValues, [paramKey]: Number(slider.value) };
     getStore().update({ design });
+    renderBlueprint();
     renderRightColumn();
   });
 

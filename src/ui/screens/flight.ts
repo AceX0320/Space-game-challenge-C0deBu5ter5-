@@ -3,7 +3,12 @@ import { getStore } from '@/state/store';
 import { transitionTo } from '@/state/flow';
 import { getBodies, getContracts, getItems, getParts } from '@/data/index';
 import { computeShipStats } from '@/builder/compute-ship-stats';
-import { createFlightSim, autoFly, ringForDistance } from '@/sim/flight-sim';
+import {
+  createFlightSim,
+  autoFly,
+  ringForDistance,
+  LAUNCH_TARGET_ALTITUDE_M,
+} from '@/sim/flight-sim';
 import { KeyboardInput } from '@/sim/input';
 import { formatDistance, formatSpeed, formatAngleDeg, formatPercent } from '@/sim/units';
 import { simulateScavenge } from '@/economy/scavenge';
@@ -30,7 +35,7 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
   const ctaBtn = mkPrimary('Awaiting Touchdown…', () => {});
   ctaBtn.disabled = true;
 
-  const autoLandBtn = mkSecondary('⚡ AI Auto-Land', () => {
+  const autoLandBtn = mkSecondary('⚡ AI Auto-Fly', () => {
     if (isCompleted) return;
     const flightResult = autoFly(sim);
     completeMission(flightResult);
@@ -64,6 +69,7 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
   canvas.width = 1200;
   canvas.height = 560;
   canvas.style.cssText = 'width:100%; height:100%; background:#0e0e0f; display:block;';
+  canvas.setAttribute('aria-label', `Live mission route from Earth to ${body.name}, with the spacecraft's current flight position.`);
   canvasPanel.appendChild(canvas);
   bodyEl.appendChild(canvasPanel);
 
@@ -77,24 +83,90 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
   `;
   controlsGuide.innerHTML = `
     <div>
-      <span class="ls-micro">Controls:</span>
+      <span class="ls-micro">Mission:</span> Hold throttle to launch from Earth; follow the route marker through transfer, then manage powered landing on ${body.name}.
+    </div>
+    <div>
+      <span class="ls-micro">Flight controls:</span>
       <span style="color:var(--ls-text)">SPACE / W / ↑</span> Throttle &nbsp;|&nbsp;
       <span style="color:var(--ls-text)">A / ←</span> Pitch Left &nbsp;|&nbsp;
       <span style="color:var(--ls-text)">D / →</span> Pitch Right
     </div>
-    <div>
-      <span class="ls-micro">Limits:</span>
-      Vy ≤ ${stats.touchdownLimits.maxVyMs} m/s &nbsp;|&nbsp;
-      Vx ≤ ${stats.touchdownLimits.maxVxMs} m/s &nbsp;|&nbsp;
-      Tilt ≤ ${stats.touchdownLimits.maxTiltDeg}°
-    </div>
+    <span><span class="ls-micro">Landing limits:</span> Vy ≤ ${stats.touchdownLimits.maxVyMs} m/s &nbsp;|&nbsp; Vx ≤ ${stats.touchdownLimits.maxVxMs} m/s &nbsp;|&nbsp; Tilt ≤ ${stats.touchdownLimits.maxTiltDeg}°</span>
   `;
   bodyEl.appendChild(controlsGuide);
+
+  const touchControls = document.createElement('div');
+  touchControls.style.cssText = 'display:flex; flex-wrap:wrap; justify-content:center; gap:var(--ls-sp-2);';
+  touchControls.innerHTML = `
+    <button class="ls-btn" data-hold="left" aria-label="Hold to pitch left">◀ PITCH LEFT</button>
+    <button class="ls-btn ls-btn-primary" data-hold="thrust" aria-label="Hold to apply throttle">▲ HOLD THROTTLE</button>
+    <button class="ls-btn" data-hold="right" aria-label="Hold to pitch right">PITCH RIGHT ▶</button>
+    <label style="display:flex;align-items:center;gap:var(--ls-sp-2);padding:0 var(--ls-sp-2);font:var(--ls-size-xs) var(--ls-font-mono);color:var(--ls-text-dim)">
+      THROTTLE <input data-analog-throttle type="range" min="0" max="100" value="0" aria-label="Throttle level" style="accent-color:var(--ls-orange)"/>
+      <output data-throttle-readout>0%</output>
+    </label>
+    <button class="ls-btn" data-hold="chute" aria-label="Hold to deploy parachute">▱ PARACHUTE</button>
+  `;
+  if (!body.atmosphere || (stats.parachuteAreaM2 ?? 0) <= 0) {
+    const parachuteButton = touchControls.querySelector<HTMLButtonElement>('[data-hold="chute"]');
+    if (parachuteButton) {
+      parachuteButton.disabled = true;
+      parachuteButton.textContent = body.atmosphere ? '▱ NO PARACHUTE INSTALLED' : '▱ NO ATMOSPHERE';
+    }
+  }
+  bodyEl.appendChild(touchControls);
 
   // Instantiate simulation & inputs
   const sim = createFlightSim(stats, body, state.save.difficulty, Date.now());
   const input = new KeyboardInput(window);
   input.attach();
+  const heldControls = new Set<string>();
+  const throttleSlider = touchControls.querySelector<HTMLInputElement>('[data-analog-throttle]');
+  const throttleReadout = touchControls.querySelector<HTMLOutputElement>('[data-throttle-readout]');
+  let analogThrottle = 0;
+  const onThrottleInput = (): void => {
+    analogThrottle = Number(throttleSlider?.value ?? 0) / 100;
+    if (throttleReadout) throttleReadout.value = `${Math.round(analogThrottle * 100)}%`;
+  };
+  throttleSlider?.addEventListener('input', onThrottleInput);
+  const activeHoldButton = (target: EventTarget | null): HTMLButtonElement | null =>
+    target instanceof Element ? target.closest<HTMLButtonElement>('[data-hold]') : null;
+  const onPointerDown = (event: PointerEvent): void => {
+    const button = activeHoldButton(event.target);
+    if (!button) return;
+    event.preventDefault();
+    const control = button.dataset['hold'];
+    if (control) heldControls.add(control);
+    button.classList.add('is-holding');
+    button.style.filter = 'brightness(1.35)';
+    button.setPointerCapture?.(event.pointerId);
+  };
+  const releasePointerControl = (event: PointerEvent): void => {
+    const button = activeHoldButton(event.target);
+    if (button) {
+      const control = button.dataset['hold'];
+      if (control) heldControls.delete(control);
+      button.classList.remove('is-holding');
+      button.style.filter = '';
+    } else {
+      heldControls.clear();
+      touchControls.querySelectorAll<HTMLButtonElement>('.is-holding').forEach((element) => {
+        element.classList.remove('is-holding');
+        element.style.filter = '';
+      });
+    }
+  };
+  const clearPointerControls = (): void => {
+    heldControls.clear();
+    touchControls.querySelectorAll<HTMLButtonElement>('.is-holding').forEach((element) => {
+      element.classList.remove('is-holding');
+      element.style.filter = '';
+    });
+  };
+  touchControls.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointerup', releasePointerControl);
+  window.addEventListener('pointercancel', releasePointerControl);
+  window.addEventListener('blur', clearPointerControls);
 
   const ctx = canvas.getContext('2d');
 
@@ -102,6 +174,14 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
     if (isCompleted) return;
     isCompleted = true;
     input.detach();
+    clearPointerControls();
+    touchControls.removeEventListener('pointerdown', onPointerDown);
+    throttleSlider?.removeEventListener('input', onThrottleInput);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('pointerup', releasePointerControl);
+      window.removeEventListener('pointercancel', releasePointerControl);
+      window.removeEventListener('blur', clearPointerControls);
+    }
     if (animFrameId && typeof cancelAnimationFrame !== 'undefined') {
       cancelAnimationFrame(animFrameId);
     }
@@ -243,15 +323,17 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
 
     // Read player inputs
     const cmd = input.read();
-    const pitchRate = (cmd.rotateRight ? 35 : 0) - (cmd.rotateLeft ? 35 : 0);
-    const throttle = cmd.thrust ? 1.0 : 0.0;
+    const pitchRight = cmd.rotateRight || heldControls.has('right');
+    const pitchLeft = cmd.rotateLeft || heldControls.has('left');
+    const pitchRate = (pitchRight ? 35 : 0) - (pitchLeft ? 35 : 0);
+    const throttle = cmd.thrust || heldControls.has('thrust') ? 1.0 : analogThrottle;
 
     // Step simulation
     sim.step(dtS, {
       throttle,
       pitchRate,
       rcs: 0,
-      deployParachute: false,
+      deployParachute: heldControls.has('chute'),
     });
 
     // Render Canvas
@@ -272,42 +354,68 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
         ctx.fillRect(sx, sy, 1.2, 1.2);
       }
 
-      // 3. Ground Surface & Landing Target
+      // 3. Surface view: Earth during launch, destination during descent.
       const groundY = h - 70;
-      ctx.fillStyle = body.id === 'mars' ? '#331d20' : body.id === 'venus' ? '#332917' : '#1c1b1c';
-      ctx.fillRect(0, groundY, w, 70);
-
-      // Ground horizon line
-      ctx.strokeStyle = '#2a2a2b';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, groundY);
-      ctx.lineTo(w, groundY);
-      ctx.stroke();
-
-      // Bullseye target rings on ground (orange / mint)
       const centerX = w / 2;
-      const ringColors = ['#1c1b1c', '#2a2a2b', '#ab897f', '#ff5a1f', '#61dda0'];
-      const ringWidths = [300, 220, 150, 80, 36];
-      for (let r = 0; r < 5; r++) {
-        ctx.fillStyle = ringColors[r] ?? '#61dda0';
-        const rw = ringWidths[r] ?? 36;
-        ctx.fillRect(centerX - rw / 2, groundY, rw, 6);
+      const isAscent = s.phase === 'ascent';
+      const isTransit = s.phase === 'transit';
+      const isDescent = !isAscent && !isTransit;
+
+      if (!isTransit) {
+        ctx.fillStyle = isAscent
+          ? '#1d5368'
+          : body.id === 'mars'
+            ? '#331d20'
+            : body.id === 'venus'
+              ? '#332917'
+              : '#1c1b1c';
+        ctx.fillRect(0, groundY, w, 70);
+        ctx.strokeStyle = '#2a2a2b';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        ctx.lineTo(w, groundY);
+        ctx.stroke();
       }
 
-      // Ring target marker
-      ctx.strokeStyle = '#ff5a1f';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(centerX, groundY - 12);
-      ctx.lineTo(centerX, groundY);
-      ctx.stroke();
+      if (isAscent) {
+        ctx.fillStyle = '#9ec8df';
+        ctx.fillRect(centerX - 40, groundY - 8, 80, 8);
+        ctx.fillStyle = '#7896a8';
+        ctx.fillRect(centerX - 24, groundY - 22, 48, 14);
+        ctx.fillStyle = '#e5e2e3';
+        ctx.font = '12px "JetBrains Mono", monospace';
+        ctx.fillText('EARTH LAUNCH PAD', centerX + 52, groundY - 8);
+      }
+
+      if (isDescent) {
+        const ringColors = ['#1c1b1c', '#2a2a2b', '#ab897f', '#ff5a1f', '#61dda0'];
+        const ringWidths = [300, 220, 150, 80, 36];
+        for (let r = 0; r < 5; r++) {
+          ctx.fillStyle = ringColors[r] ?? '#61dda0';
+          const rw = ringWidths[r] ?? 36;
+          ctx.fillRect(centerX - rw / 2, groundY, rw, 6);
+        }
+        ctx.strokeStyle = '#ff5a1f';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(centerX, groundY - 12);
+        ctx.lineTo(centerX, groundY);
+        ctx.stroke();
+      }
 
       // 4. Spacecraft Position (Scaled for Display, offset by footpad height 19px)
       const FOOTPAD_OFFSET_PX = 19;
-      const scaleY = (groundY - 50 - FOOTPAD_OFFSET_PX) / 1000;
-      const craftY = Math.max(50, (groundY - FOOTPAD_OFFSET_PX) - s.yM * scaleY);
-      const craftX = Math.max(40, Math.min(w - 40, centerX + s.xM * 0.6));
+      const descentScaleY = (groundY - 50 - FOOTPAD_OFFSET_PX) / 1000;
+      const launchScaleY = (groundY - 90) / LAUNCH_TARGET_ALTITUDE_M;
+      const craftX = isTransit
+        ? 90 + (w - 180) * s.phaseProgress
+        : Math.max(40, Math.min(w - 40, centerX + s.xM * 0.6));
+      const craftY = isTransit
+        ? groundY * 0.48 - Math.sin(Math.PI * s.phaseProgress) * 150
+        : isAscent
+          ? groundY - Math.max(0, s.yM) * launchScaleY
+          : Math.max(50, (groundY - FOOTPAD_OFFSET_PX) - s.yM * descentScaleY);
 
       ctx.save();
       ctx.translate(craftX, craftY);
@@ -361,7 +469,68 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
 
       ctx.restore();
 
-      // 5. Telemetry HUD Overlay (Top-Left)
+      // 5. Mission route preview with a live vehicle marker.
+      ctx.fillStyle = 'rgba(28, 27, 28, 0.94)';
+      ctx.fillRect(326, 16, 858, 126);
+      ctx.strokeStyle = '#2a2a2b';
+      ctx.strokeRect(326, 16, 858, 126);
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#ab897f';
+      ctx.fillText(`MISSION PATH  ·  EARTH → ${body.name.toUpperCase()}`, 342, 34);
+      const routeStartX = 390;
+      const routeEndX = 1110;
+      const routeY = 88;
+      const routeControlY = 45;
+      const routeProgress = s.phase === 'ascent'
+        ? s.phaseProgress * 0.15
+        : s.phase === 'transit'
+          ? 0.15 + s.phaseProgress * 0.7
+          : s.phase === 'landed' || s.phase === 'crashed'
+            ? 1
+            : 0.85 + s.phaseProgress * 0.15;
+      const routePoint = (t: number): { x: number; y: number } => ({
+        x: (1 - t) ** 2 * routeStartX + 2 * (1 - t) * t * centerX + t ** 2 * routeEndX,
+        y: (1 - t) ** 2 * routeY + 2 * (1 - t) * t * routeControlY + t ** 2 * routeY,
+      });
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#2a2a2b';
+      ctx.beginPath();
+      for (let index = 0; index <= 40; index += 1) {
+        const point = routePoint(index / 40);
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = '#ff5a1f';
+      ctx.beginPath();
+      for (let index = 0; index <= 40 * routeProgress; index += 1) {
+        const point = routePoint(index / 40);
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      }
+      ctx.stroke();
+      const routeMarker = routePoint(routeProgress);
+      ctx.fillStyle = '#ff5a1f';
+      ctx.beginPath();
+      ctx.arc(routeMarker.x, routeMarker.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#61dda0';
+      ctx.beginPath();
+      ctx.arc(routeStartX - 18, routeY, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = body.id === 'mars' ? '#c45e4d' : body.id === 'venus' ? '#d2a84c' : '#ab897f';
+      ctx.beginPath();
+      ctx.arc(routeEndX + 5, routeY, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#e5e2e3';
+      ctx.fillText('EARTH', routeStartX - 34, 119);
+      ctx.fillText(`${body.name.toUpperCase()} SURFACE`, routeEndX - 45, 119);
+      ctx.fillStyle = '#ffba3b';
+      ctx.textAlign = 'right';
+      ctx.fillText(s.phase.toUpperCase(), 1168, 34);
+      ctx.textAlign = 'start';
+
+      // 6. Telemetry HUD Overlay (Top-Left)
       ctx.fillStyle = 'rgba(28, 27, 28, 0.94)';
       ctx.fillRect(16, 16, 300, 218);
       ctx.strokeStyle = '#2a2a2b';
@@ -371,7 +540,7 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       // Header in HUD
       ctx.font = '10px "JetBrains Mono", monospace';
       ctx.fillStyle = '#ab897f';
-      ctx.fillText('LIVE DESCENT TELEMETRY', 26, 32);
+      ctx.fillText(`${s.phase.toUpperCase()} TELEMETRY`, 26, 32);
 
       ctx.font = '12px "JetBrains Mono", monospace';
 
@@ -382,14 +551,14 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       ctx.fillText(formatDistance(s.yM), 120, 52);
 
       // Vertical Speed (color-coded)
-      const vSafe = Math.abs(s.vyMs) <= stats.touchdownLimits.maxVyMs;
+      const vSafe = isAscent || isTransit || Math.abs(s.vyMs) <= stats.touchdownLimits.maxVyMs;
       ctx.fillStyle = '#ab897f';
       ctx.fillText('V-SPEED  :', 26, 72);
       ctx.fillStyle = vSafe ? '#61dda0' : '#e03535';
       ctx.fillText(formatSpeed(s.vyMs), 120, 72);
 
       // Horizontal Speed
-      const hSafe = Math.abs(s.vxMs) <= stats.touchdownLimits.maxVxMs;
+      const hSafe = isAscent || isTransit || Math.abs(s.vxMs) <= stats.touchdownLimits.maxVxMs;
       ctx.fillStyle = '#ab897f';
       ctx.fillText('H-SPEED  :', 26, 92);
       ctx.fillStyle = hSafe ? '#61dda0' : '#e03535';
@@ -517,6 +686,14 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
           input.detach();
         } catch {
           // ignore in headless test environment
+        }
+        clearPointerControls();
+        touchControls.removeEventListener('pointerdown', onPointerDown);
+        throttleSlider?.removeEventListener('input', onThrottleInput);
+        if (typeof window !== 'undefined') {
+          window.removeEventListener('pointerup', releasePointerControl);
+          window.removeEventListener('pointercancel', releasePointerControl);
+          window.removeEventListener('blur', clearPointerControls);
         }
         observer.disconnect();
       }
