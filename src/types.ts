@@ -136,8 +136,16 @@ export interface Contract {
 
 export type FlightOutcome = 'soft' | 'rough' | 'crash' | 'abort';
 
+export interface PartFlightUsage {
+  throttleSecondsS: number;
+  rcsSecondsS: number;
+  flightSecondsS: number;
+}
+
 export interface FlightResult {
   outcome: FlightOutcome;
+  partUsage: Record<string, PartFlightUsage>;
+  touchdownStress: number;
   landingRing: number;
   distanceFromTargetM: number;
   touchdownVyMs: number;
@@ -173,6 +181,7 @@ export interface ItemDef {
   scienceValue: number;
   source: DataSource;
   researchNodeId?: string;
+  saleValueM?: number;
 }
 
 export interface ScavengeResult {
@@ -192,6 +201,7 @@ export interface MissionResult {
   scavenge: ScavengeResult | null;
   partWearDelta: Record<string, number>;
   malfunctions: string[];
+  scavengeValueM?: number;
 }
 
 export type StreakTrack = 'cleanAscent' | 'smoothHands' | 'pinpoint' | 'softTouch' | 'frugal';
