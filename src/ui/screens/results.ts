@@ -73,9 +73,9 @@ export function renderResults(root: HTMLElement, state: GameState): void {
 
   // 1. Outcome Banner
   const bannerColor =
-    flightOutcome === 'soft'
+    flight.outcome === 'soft'
       ? 'var(--ok)'
-      : flightOutcome === 'rough'
+      : flight.outcome === 'rough'
         ? 'var(--warn)'
         : 'var(--danger)';
 
@@ -89,7 +89,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
       <div style="font-size:1rem; color:var(--text); font-weight:500">${report.headline}</div>
     </div>
     <div style="text-align:right; flex-shrink:0;">
-      <span class="ls-chip ${outcomePillClass}" style="font-size:0.8125rem; padding:4px 10px;">${flightOutcome.toUpperCase()}</span>
+      <span class="ls-chip ${outcomePillClass}" style="font-size:0.8125rem; padding:4px 10px;">${flight.outcome.toUpperCase()}</span>
       ${
         payout.isRecord
           ? '<span class="ls-chip ls-chip-orange" style="font-size:0.8125rem; padding:4px 10px; margin-left:6px">NEW PROFIT RECORD</span>'
@@ -120,8 +120,8 @@ export function renderResults(root: HTMLElement, state: GameState): void {
   telemPanel.innerHTML = `
     <div class="ls-panel-header">
       <span class="ls-panel-title">Touchdown Telemetry & Impact Kinematics</span>
-      <span class="ls-chip ${flightOutcome === 'soft' ? 'ls-chip-green' : flightOutcome === 'rough' ? 'ls-chip-amber' : 'ls-chip-orange'}">
-        ${flightOutcome === 'crash' ? 'IMPACT VIOLATION' : 'KINEMATICS NOMINAL'}
+      <span class="ls-chip ${flight.outcome === 'soft' ? 'ls-chip-green' : flight.outcome === 'rough' ? 'ls-chip-amber' : 'ls-chip-orange'}">
+        ${flight.outcome === 'crash' ? 'IMPACT VIOLATION' : 'KINEMATICS NOMINAL'}
       </span>
     </div>
     <div class="ls-panel-body">
@@ -160,7 +160,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
       </div>
       <div style="font-size:0.8125rem; color:var(--text-muted); line-height:1.4;">
         ${
-          flightOutcome === 'crash'
+          flight.outcome === 'crash'
             ? `<span style="color:var(--danger); font-weight:600">CRASH CAUSE:</span> ${
                 !vySafe
                   ? `Descent rate (${vy.toFixed(1)} m/s) exceeded the ${maxVy} m/s landing gear shock threshold, collapsing landing struts on impact.`
@@ -170,7 +170,7 @@ export function renderResults(root: HTMLElement, state: GameState): void {
                       ? `Lateral drift velocity (${vx.toFixed(1)} m/s) sheared landing gear sideways upon surface contact.`
                       : 'Severe structural destruction occurred before touchdown stabilization.'
               }`
-            : flightOutcome === 'rough'
+            : flight.outcome === 'rough'
               ? `<span style="color:var(--warn); font-weight:600">DAMAGE NOTICE:</span> Hard landing near structural tolerances caused shock fatigue to installed hardware.`
               : `<span style="color:var(--ok); font-weight:600">TOUCHDOWN CONFIRMED:</span> Controlled touchdown within all structural and attitude margins.`
         }
