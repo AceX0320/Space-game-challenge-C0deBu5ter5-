@@ -117,6 +117,12 @@ export interface Body {
   baseLifetimeS: number;
   solarFlux: number;
   note?: string;
+  escapeVelocityMs?: number;
+  tempRangeC?: string;
+  rotationPeriodH?: number;
+  distanceAu?: number;
+  transitDays?: number;
+  deltaVToOrbitMs?: number;
 }
 
 export interface Contract {
@@ -130,6 +136,13 @@ export interface Contract {
   fundingGateM: number;
   unlocksContractId?: string;
   bonusObjectives?: { id: string; text: string; extraRewardM: number }[];
+  targetAccuracyM?: number;
+  requiredDeltaVMs?: number;
+  recommendedBaseline?: {
+    maxWetMassKg: number;
+    minTwr: number;
+    minDeltaVMarginMs: number;
+  };
 }
 
 export type FlightOutcome = 'soft' | 'rough' | 'crash' | 'abort';

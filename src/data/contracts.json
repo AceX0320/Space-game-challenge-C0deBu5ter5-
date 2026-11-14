@@ -9,6 +9,13 @@
     "rewardM": 60,
     "fundingGateM": 70,
     "unlocksContractId": "eyes-on-mars",
+    "targetAccuracyM": 50,
+    "requiredDeltaVMs": 1720,
+    "recommendedBaseline": {
+      "maxWetMassKg": 12000,
+      "minTwr": 1.2,
+      "minDeltaVMarginMs": 200
+    },
     "bonusObjectives": [
       { "id": "bullseye", "text": "Land within the innermost ring", "extraRewardM": 10 }
     ]
@@ -23,6 +30,13 @@
     "rewardM": 100,
     "fundingGateM": 120,
     "unlocksContractId": "listen-to-the-moon",
+    "targetAccuracyM": 80,
+    "requiredDeltaVMs": 3800,
+    "recommendedBaseline": {
+      "maxWetMassKg": 16000,
+      "minTwr": 1.1,
+      "minDeltaVMarginMs": 350
+    },
     "bonusObjectives": [
       {
         "id": "subsurface",
@@ -41,6 +55,13 @@
     "rewardM": 90,
     "fundingGateM": 180,
     "unlocksContractId": "titan-descent",
+    "targetAccuracyM": 30,
+    "requiredDeltaVMs": 1850,
+    "recommendedBaseline": {
+      "maxWetMassKg": 14000,
+      "minTwr": 1.3,
+      "minDeltaVMarginMs": 250
+    },
     "bonusObjectives": [
       { "id": "icefind", "text": "Also find water ice with a drill", "extraRewardM": 15 }
     ]
@@ -55,6 +76,13 @@
     "rewardM": 160,
     "fundingGateM": 280,
     "unlocksContractId": "hot-neighbour",
+    "targetAccuracyM": 100,
+    "requiredDeltaVMs": 2600,
+    "recommendedBaseline": {
+      "maxWetMassKg": 20000,
+      "minTwr": 1.05,
+      "minDeltaVMarginMs": 400
+    },
     "bonusObjectives": [
       { "id": "organics", "text": "Detect complex organic compounds", "extraRewardM": 30 }
     ]
@@ -69,6 +97,13 @@
     "rewardM": 200,
     "fundingGateM": 400,
     "unlocksContractId": "tiny-world",
+    "targetAccuracyM": 120,
+    "requiredDeltaVMs": 4200,
+    "recommendedBaseline": {
+      "maxWetMassKg": 25000,
+      "minTwr": 1.25,
+      "minDeltaVMarginMs": 500
+    },
     "bonusObjectives": [
       {
         "id": "atm-sample",
@@ -85,7 +120,14 @@
     "requiredInstruments": ["spectrometer", "drill"],
     "budgetCapM": 100,
     "rewardM": 150,
-    "fundingGateM": 999999,
+    "fundingGateM": 500,
+    "targetAccuracyM": 20,
+    "requiredDeltaVMs": 1200,
+    "recommendedBaseline": {
+      "maxWetMassKg": 8000,
+      "minTwr": 1.0,
+      "minDeltaVMarginMs": 150
+    },
     "bonusObjectives": [
       { "id": "metals", "text": "Identify metallic core material", "extraRewardM": 50 }
     ]

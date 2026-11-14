@@ -7,6 +7,12 @@
     "atmosphere": null,
     "baseLifetimeS": 86400,
     "solarFlux": 1.0,
+    "escapeVelocityMs": 2380,
+    "tempRangeC": "-130°C to +120°C",
+    "rotationPeriodH": 655.7,
+    "distanceAu": 0.00257,
+    "transitDays": 3,
+    "deltaVToOrbitMs": 1680,
     "note": "Gravity: NASA Planetary Fact Sheet. No atmosphere. Pure powered descent required."
   },
   {
@@ -20,6 +26,12 @@
     },
     "baseLifetimeS": 259200,
     "solarFlux": 0.43,
+    "escapeVelocityMs": 5030,
+    "tempRangeC": "-140°C to +20°C",
+    "rotationPeriodH": 24.6,
+    "distanceAu": 1.524,
+    "transitDays": 210,
+    "deltaVToOrbitMs": 4100,
     "note": "Gravity: NASA Planetary Fact Sheet. Very thin CO2 atmosphere — parachute helps but powered descent still needed."
   },
   {
@@ -33,6 +45,12 @@
     },
     "baseLifetimeS": 604800,
     "solarFlux": 0.011,
+    "escapeVelocityMs": 2640,
+    "tempRangeC": "-179°C",
+    "rotationPeriodH": 382.7,
+    "distanceAu": 9.582,
+    "transitDays": 2500,
+    "deltaVToOrbitMs": 2440,
     "note": "Gravity: NASA Planetary Fact Sheet. Thick nitrogen atmosphere — parachute very effective. Low solar flux: RTG recommended."
   },
   {
@@ -46,6 +64,12 @@
     },
     "baseLifetimeS": 3600,
     "solarFlux": 1.9,
+    "escapeVelocityMs": 10360,
+    "tempRangeC": "+462°C",
+    "rotationPeriodH": 5832.5,
+    "distanceAu": 0.723,
+    "transitDays": 110,
+    "deltaVToOrbitMs": 27000,
     "note": "Gravity: NASA Planetary Fact Sheet. Extremely thick and hot CO2 atmosphere. Very short surface lifetime — heat shield critical."
   },
   {
@@ -56,6 +80,12 @@
     "atmosphere": null,
     "baseLifetimeS": 172800,
     "solarFlux": 1.2,
+    "escapeVelocityMs": 0.38,
+    "tempRangeC": "-73°C to +80°C",
+    "rotationPeriodH": 7.6,
+    "distanceAu": 1.19,
+    "transitDays": 300,
+    "deltaVToOrbitMs": 5,
     "note": "Gravity: game value representative of small C-type asteroid. Escape risk: very gentle touchdown required."
   }
 ]
