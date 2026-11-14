@@ -205,12 +205,24 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
           );
 
     // 2. Part Wear & Delta
-    const updatedParts = applyWear(currentState.design.parts, currentState.save.difficulty, {});
+    const partsCatalog = getParts();
+    const usage: Record<string, number> = {};
+    for (const part of currentState.design.parts) {
+      const def = partsCatalog.find((d) => d.id === part.partId);
+      if (def?.category === 'leg') {
+        usage[part.instanceId] = flightResult.outcome === 'crash' ? 8.0 : flightResult.outcome === 'rough' ? 2.5 : 1.0;
+      } else if (def?.category === 'engine') {
+        usage[part.instanceId] = Math.max(0.8, (flightResult.ascentFuelUsedPct || 50) / 40);
+      } else {
+        usage[part.instanceId] = flightResult.outcome === 'crash' ? 4.0 : flightResult.outcome === 'rough' ? 1.5 : 1.0;
+      }
+    }
+    const updatedParts = applyWear(currentState.design.parts, currentState.save.difficulty, usage);
     const partWearDelta: Record<string, number> = {};
     for (let i = 0; i < currentState.design.parts.length; i++) {
       const orig = currentState.design.parts[i]!;
       const upd = updatedParts[i]!;
-      partWearDelta[orig.instanceId] = orig.condition - upd.condition;
+      partWearDelta[orig.instanceId] = Math.max(0, +(orig.condition - upd.condition).toFixed(2));
     }
 
     const missionResult: MissionResult = {
@@ -222,10 +234,7 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       malfunctions: flightResult.events.filter((e) => e.kind === 'malfunction').map((e) => e.text),
     };
 
-    // 3. Payout Calculation
-    const payout = computePayout(contract, missionResult, stats, currentState.save, 0);
-
-    // 4. Streaks Update
+    // 3. Streaks Update (compute new streaks before payout so player receives the earned multiplier)
     const streakUpdate = updateStreaks(
       currentState.save.streaks,
       missionResult,
@@ -233,6 +242,14 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
       contract,
       currentState.save.safetyNets
     );
+
+    // 4. Payout Calculation (with active streak multiplier)
+    const saveWithStreaks = {
+      ...currentState.save,
+      streaks: streakUpdate.streaks,
+      safetyNets: streakUpdate.safetyNets,
+    };
+    const payout = computePayout(contract, missionResult, stats, saveWithStreaks, 0);
 
     // 5. Update SaveGame
     const newFundsM = Math.max(0, currentState.save.fundsM + payout.netM);
@@ -279,9 +296,10 @@ export function renderFlight(root: HTMLElement, state: GameState): void {
     // 6. Generate Report
     const report = generateReport(contract, stats, missionResult, payout);
 
-    // 7. Update Store
+    // 7. Update Store (including worn parts in active design)
     store.update({
       stats,
+      design: { ...currentState.design, parts: updatedParts },
       missionResult,
       payout,
       report,

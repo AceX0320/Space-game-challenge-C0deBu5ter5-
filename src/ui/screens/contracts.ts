@@ -128,12 +128,13 @@ export function renderContracts(root: HTMLElement, state: GameState): void {
   // CENTRE: destinations list + orbital map
   const mainCol = document.createElement('div');
   mainCol.className = 'ls-col-main';
+  mainCol.style.cssText = 'padding: 0 var(--sp-3) 90px; overflow-y: auto; overscroll-behavior: contain;';
   bodyEl.appendChild(mainCol);
 
   // RIGHT: body specs + contract card
   const rightCol = document.createElement('div');
   rightCol.className = 'ls-col-right';
-  rightCol.style.padding = 'var(--sp-3)';
+  rightCol.style.cssText = 'padding: var(--sp-3) var(--sp-3) 90px; overflow-y: auto; overscroll-behavior: contain;';
   bodyEl.appendChild(rightCol);
 
   function renderMain() {

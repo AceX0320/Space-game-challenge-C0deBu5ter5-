@@ -52,7 +52,9 @@ export function renderPreflight(root: HTMLElement, state: GameState): void {
   });
   bodyEl.style.display = 'flex';
   bodyEl.style.justifyContent = 'center';
-  bodyEl.style.padding = 'var(--ls-sp-6) var(--ls-sp-4)';
+  bodyEl.style.padding = 'var(--ls-sp-6) var(--ls-sp-4) 90px';
+  bodyEl.style.overflowY = 'auto';
+  bodyEl.style.overscrollBehavior = 'contain';
 
   const wrapper = document.createElement('div');
   wrapper.style.cssText = 'max-width:800px; width:100%; display:flex; flex-direction:column; gap:var(--ls-sp-4);';

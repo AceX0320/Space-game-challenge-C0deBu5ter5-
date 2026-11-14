@@ -3,9 +3,11 @@
  * Implements the Figma spec from antigravity-ui-restyle-prompt.md.
  * No emoji — SVG line icons only (1.5px stroke).
  */
-import type { GamePhase } from '@/types';
+import type { GamePhase, Difficulty } from '@/types';
 import type { GameState } from '@/state/store';
+import { getStore } from '@/state/store';
 import { transitionTo } from '@/state/flow';
+import { writeSave } from '@/economy/save-load';
 
 /** Ordered steps shown in the step-nav bar */
 const STEPS: { phase: GamePhase; label: string; num: string }[] = [
@@ -122,9 +124,9 @@ export function renderShell(
   }
   header.appendChild(tabs);
 
-  // Difficulty segmented control (locked once mission starts)
-  const isMidMission = ['hangar', 'preflight', 'flight', 'scavenge'].includes(state.phase);
-  const diffs: Array<{ key: string; label: string }> = [
+  // Difficulty segmented control (locked only during active flight / scavenge simulation)
+  const isMidMission = ['flight', 'scavenge'].includes(state.phase);
+  const diffs: Array<{ key: Difficulty; label: string }> = [
     { key: 'easy', label: 'Easy' },
     { key: 'normal', label: 'Normal' },
     { key: 'hard', label: 'Hard' },
@@ -138,7 +140,20 @@ export function renderShell(
     btn.className = `ls-seg-btn${state.save.difficulty === d.key ? ' is-active' : ''}`;
     btn.textContent = d.label;
     btn.disabled = isMidMission;
-    btn.title = isMidMission ? 'Cannot change difficulty mid-mission' : '';
+    btn.title = isMidMission ? 'Cannot change difficulty mid-flight' : `Switch mode to ${d.label}`;
+    if (!isMidMission) {
+      btn.addEventListener('click', () => {
+        const store = getStore();
+        const cur = store.getState();
+        if (cur.save.difficulty === d.key) return;
+        const updatedSave = { ...cur.save, difficulty: d.key };
+        if (d.key === 'sandbox' && updatedSave.fundsM < 999999) {
+          updatedSave.fundsM = 999999;
+        }
+        writeSave(updatedSave);
+        store.update({ save: updatedSave });
+      });
+    }
     seg.appendChild(btn);
   }
   header.appendChild(seg);

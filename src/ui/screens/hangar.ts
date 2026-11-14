@@ -236,7 +236,13 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
   // 4. Compact Single-Row Installed Hardware Rail (Max height 72px)
   const hardwareStrip = document.createElement('div');
   hardwareStrip.className = 'installed-hardware-strip';
-  hardwareStrip.style.cssText = 'height: 52px; max-height: 72px; flex-shrink: 0; display: flex; align-items: center; overflow-x: auto; overflow-y: hidden;';
+  hardwareStrip.style.cssText = 'height: 52px; max-height: 72px; flex-shrink: 0; display: flex; align-items: center; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth;';
+  hardwareStrip.addEventListener('wheel', (e: WheelEvent) => {
+    if (e.deltaY !== 0) {
+      e.preventDefault();
+      hardwareStrip.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
   mainCol.appendChild(hardwareStrip);
 
   bodyEl.appendChild(mainCol);

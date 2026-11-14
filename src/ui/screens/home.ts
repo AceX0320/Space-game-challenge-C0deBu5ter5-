@@ -1,7 +1,10 @@
 import type { GameState } from '@/state/store';
+import { getStore } from '@/state/store';
 import { transitionTo } from '@/state/flow';
 import { renderShell, mkPrimary } from '@/ui/components/shell';
 import { formatM } from '@/core/units';
+import { writeSave } from '@/economy/save-load';
+import type { Difficulty } from '@/types';
 
 export function renderHome(root: HTMLElement, state: GameState): void {
   const startBtn = mkPrimary('Select Flight Contract →', () => transitionTo('contracts'));
@@ -14,11 +17,21 @@ export function renderHome(root: HTMLElement, state: GameState): void {
   bodyEl.style.display = 'flex';
   bodyEl.style.flexDirection = 'column';
   bodyEl.style.alignItems = 'center';
-  bodyEl.style.justifyContent = 'center';
-  bodyEl.style.padding = 'var(--ls-sp-8) var(--ls-sp-4)';
+  bodyEl.style.justifyContent = 'flex-start';
+  bodyEl.style.padding = 'var(--ls-sp-6) var(--ls-sp-4) 90px';
+  bodyEl.style.overflowY = 'auto';
+  bodyEl.style.overscrollBehavior = 'contain';
 
   const centerBox = document.createElement('div');
-  centerBox.style.cssText = 'max-width:680px; width:100%; display:flex; flex-direction:column; gap:var(--ls-sp-4); text-align:center;';
+  centerBox.style.cssText = 'max-width:720px; width:100%; display:flex; flex-direction:column; gap:var(--ls-sp-4); text-align:center; margin:auto 0;';
+
+  const curDiff = state.save.difficulty;
+  const diffDescriptions: Record<Difficulty, string> = {
+    easy: 'Relaxed: 1.5× contract budget cap, 0× part wear & tear, +50% larger bullseye landing zones, guided telemetry hints.',
+    normal: 'Authentic: 1.0× contract budget cap, standard component degradation per mission, standard planetary gravity & drag.',
+    hard: 'Hardcore: 0.8× budget cap, 1.75× accelerated wear & tear, mid-flight random system malfunctions, precision landing required.',
+    sandbox: 'Creative: Unlimited agency capital ($999,999M), zero wear & tear, explore all bodies and spacecraft freely.',
+  };
 
   centerBox.innerHTML = `
     <div style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--accent); letter-spacing:0.15em; text-transform:uppercase">
@@ -31,7 +44,28 @@ export function renderHome(root: HTMLElement, state: GameState): void {
       Design, engineer, fly, and land scientific spacecraft across the Solar System. Balance propulsion physics, payload limits, and agency capital.
     </p>
 
+    <!-- Operational Difficulty Selector -->
     <div class="ls-panel" style="text-align:left; margin-top:var(--sp-2);">
+      <div class="ls-panel-header">
+        <span class="ls-panel-title">Mission Difficulty & Game Mode</span>
+        <span class="ls-chip ls-chip-orange" style="text-transform:uppercase">${curDiff} MODE</span>
+      </div>
+      <div class="ls-panel-body" style="display:flex; flex-direction:column; gap:var(--sp-3);">
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
+          ${(['easy', 'normal', 'hard', 'sandbox'] as Difficulty[]).map((d) => `
+            <button type="button" class="ls-btn ${curDiff === d ? 'ls-btn-primary' : ''}" data-diff="${d}" style="justify-content:center; text-transform:uppercase; font-weight:700; font-size:0.8125rem; padding:8px 0;">
+              ${d}
+            </button>
+          `).join('')}
+        </div>
+        <div style="font-size:0.8125rem; color:var(--text-muted); background:var(--bg-inset); padding:8px 12px; border:1px solid var(--border); line-height:1.4;">
+          <strong style="color:var(--text); text-transform:uppercase">${curDiff}:</strong> ${diffDescriptions[curDiff]}
+        </div>
+      </div>
+    </div>
+
+    <!-- Agency Standing -->
+    <div class="ls-panel" style="text-align:left;">
       <div class="ls-panel-header"><span class="ls-panel-title">Agency Standing</span></div>
       <div class="ls-panel-body" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-3);">
         <div>
@@ -77,6 +111,20 @@ export function renderHome(root: HTMLElement, state: GameState): void {
   `;
 
   bodyEl.appendChild(centerBox);
+
+  // Difficulty selection clicks
+  centerBox.querySelectorAll('button[data-diff]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const chosen = (e.currentTarget as HTMLElement).getAttribute('data-diff') as Difficulty;
+      if (!chosen || chosen === state.save.difficulty) return;
+      const updatedSave = { ...state.save, difficulty: chosen };
+      if (chosen === 'sandbox' && updatedSave.fundsM < 999999) {
+        updatedSave.fundsM = 999999;
+      }
+      writeSave(updatedSave);
+      getStore().update({ save: updatedSave });
+    });
+  });
 
   centerBox.querySelector('#home-start-btn')?.addEventListener('click', () => transitionTo('contracts'));
   centerBox.querySelector('#home-research-btn')?.addEventListener('click', () => transitionTo('research'));

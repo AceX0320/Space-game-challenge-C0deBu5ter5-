@@ -56,11 +56,13 @@ export function computePayout(
         ? 0.35 + ringScore / 250
         : 0.6 + ringScore / 200;
 
-  // Science multiplier: based on data transmitted vs generated
+  // Science multiplier: based on data transmitted vs generated (defaults to 1.0 on successful landing if no surface scavenge was executed)
   const scienceMult =
     scavenge && scavenge.dataGeneratedMB > 0
       ? clamp(scavenge.dataSentMB / scavenge.dataGeneratedMB, 0, 1)
-      : 0;
+      : flight.outcome === 'soft' || flight.outcome === 'rough'
+        ? 1.0
+        : 0;
 
   // Streak multiplier (from save state)
   const streakMultiplier = computeStreakMultiplier(save.streaks);

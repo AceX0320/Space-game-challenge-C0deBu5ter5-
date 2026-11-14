@@ -134,10 +134,11 @@ export function generateReport(
     );
   }
 
-  // — Priority 2: touchdown speed / tilt —
+  // — Priority 2: touchdown speed / lateral drift / tilt —
   if (flight.outcome === 'crash' || flight.outcome === 'rough') {
     const speedOver = Math.abs(flight.touchdownVyMs) > stats.touchdownLimits.maxVyMs;
-    const tiltOver = flight.touchdownTiltDeg > stats.touchdownLimits.maxTiltDeg;
+    const lateralOver = Math.abs(flight.touchdownVxMs) > stats.touchdownLimits.maxVxMs;
+    const tiltOver = Math.abs(flight.touchdownTiltDeg) > stats.touchdownLimits.maxTiltDeg;
 
     if (speedOver) {
       const tooLowTWR = stats.twr < 1.2;
@@ -157,24 +158,51 @@ export function generateReport(
       nasaTag = 'speed';
     }
 
+    if (lateralOver) {
+      causes.push({
+        severity: flight.outcome === 'crash' ? 'critical' : 'warning',
+        text: `Lateral drift at touchdown (${Math.abs(flight.touchdownVxMs).toFixed(1)} m/s) exceeded the gear shear limit of ${stats.touchdownLimits.maxVxMs} m/s.`,
+      });
+      suggestions.push(
+        'Use RCS lateral thrusters or steer into vertical descent to null out horizontal velocity before surface contact.'
+      );
+      if (nasaTag === null) nasaTag = 'speed';
+    }
+
     if (tiltOver) {
       causes.push({
         severity: flight.outcome === 'crash' ? 'critical' : 'warning',
-        text: `Landing tilt (${flight.touchdownTiltDeg.toFixed(1)}°) exceeded the ${stats.touchdownLimits.maxTiltDeg}° stability limit — the spacecraft tipped over.`,
+        text: `Landing tilt (${Math.abs(flight.touchdownTiltDeg).toFixed(1)}°) exceeded the ${stats.touchdownLimits.maxTiltDeg}° stability limit — the spacecraft tipped over.`,
       });
       suggestions.push(
-        'Use wider-stance or longer landing legs, or add more RCS authority to hold attitude at touchdown.'
+        'Use wider-stance or longer landing legs, or add more RCS authority to hold attitude upright at touchdown.'
       );
       if (nasaTag === null) nasaTag = 'tilt';
     }
 
     // Soft/rough with no specific cause flagged
-    if (!speedOver && !tiltOver && flight.outcome === 'rough') {
+    if (!speedOver && !lateralOver && !tiltOver && flight.outcome === 'rough') {
       causes.push({
         severity: 'warning',
-        text: 'Touchdown speed or tilt pushed landing gear near its mechanical threshold, causing minor structural damage.',
+        text: 'Touchdown kinematics pushed landing gear near its mechanical threshold, causing minor structural damage.',
       });
       suggestions.push('Reduce descent rate and ensure the ship is upright at engine cutoff.');
+    }
+
+    // Fallback if outcome is crash but no specific touchdown over limit was flagged (e.g. ascent failure / propellant exhaustion)
+    if (!speedOver && !lateralOver && !tiltOver && causes.filter((c) => c.severity === 'critical').length === 0) {
+      const isFuelOut = flight.fuelLeftKg <= 0;
+      causes.push({
+        severity: 'critical',
+        text: isFuelOut
+          ? 'Propellant was fully exhausted before a controlled landing profile could be completed.'
+          : 'Spacecraft was destroyed prior to establishing a stable touchdown trajectory.',
+      });
+      suggestions.push(
+        isFuelOut
+          ? 'Increase fuel tank capacity or switch to engines with higher specific impulse (Isp).'
+          : 'Check engine thrust-to-weight ratio and maintain active throttle control during landing approach.'
+      );
     }
   }
 
@@ -184,22 +212,34 @@ export function generateReport(
     if (maxHeat === undefined || heatCap === undefined || maxHeat <= heatCap) {
       causes.push({
         severity: 'good',
-        text: `Touchdown speed (${Math.abs(flight.touchdownVyMs).toFixed(1)} m/s) was within the ${stats.touchdownLimits.maxVyMs} m/s leg limit — textbook landing.`,
+        text: `Touchdown speed (${Math.abs(flight.touchdownVyMs).toFixed(1)} m/s, tilt ${Math.abs(flight.touchdownTiltDeg).toFixed(1)}°) was within structural limits — textbook landing.`,
       });
       nasaTag = 'parachute'; // show a successful-landing NASA mission
     }
   }
 
-  // — Priority 3: fuel margin —
+  // — Priority 3: fuel margin & consumption audit —
   const fuelPct = stats.fuelMassKg > 0 ? flight.fuelLeftKg / stats.fuelMassKg : 1;
-  if (fuelPct < 0.05 && flight.outcome !== 'crash') {
-    causes.push({
-      severity: 'warning',
-      text: `Only ${(fuelPct * 100).toFixed(1)}% propellant remained after landing — razor-thin margin.`,
-    });
-    suggestions.push(
-      'Add a larger propellant tank or switch to a higher-Isp engine to widen your Δv reserve.'
-    );
+  if (flight.outcome !== 'crash') {
+    if (fuelPct >= 0.25) {
+      causes.push({
+        severity: 'good',
+        text: `Fuel consumption was efficient: ${(fuelPct * 100).toFixed(1)}% propellant (${flight.fuelLeftKg.toFixed(0)} kg) remained as reserve.`,
+      });
+    } else if (fuelPct < 0.05) {
+      causes.push({
+        severity: 'warning',
+        text: `Only ${(fuelPct * 100).toFixed(1)}% propellant remained after landing — razor-thin margin.`,
+      });
+      suggestions.push(
+        'Add a larger propellant tank or switch to a higher-Isp engine to widen your Δv reserve.'
+      );
+    } else {
+      causes.push({
+        severity: 'info',
+        text: `Propellant consumption was nominal with ${(fuelPct * 100).toFixed(1)}% reserve remaining.`,
+      });
+    }
   }
 
   // -------------------------------------------------------------------------
