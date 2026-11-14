@@ -449,7 +449,8 @@ export function renderHangar(root: HTMLElement, state: GameState): void {
       maxX = Math.max(...placements.map((p) => p.canvasX + 55));
     }
 
-    const groundDatumY = maxY + 15;
+    const legPlacement = placements.find((p) => p.category === 'leg');
+    const groundDatumY = legPlacement ? legPlacement.canvasY + 38 : maxY + 15;
     const craftHeightM = Math.max(1.8, (groundDatumY - minY) / 30);
     const craftSpanM = Math.max(1.4, (maxX - minX) / 30);
     const comY = placements.length > 0 ? (minY + maxY) / 2 : groundDatumY - 80;
