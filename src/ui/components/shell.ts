@@ -8,6 +8,7 @@ import type { GameState } from '@/state/store';
 import { getStore } from '@/state/store';
 import { transitionTo } from '@/state/flow';
 import { writeSave } from '@/economy/save-load';
+import { STARTING_FUNDS_M } from '@/config/constants';
 
 /** Ordered steps shown in the step-nav bar */
 const STEPS: { phase: GamePhase; label: string; num: string }[] = [
@@ -146,10 +147,11 @@ export function renderShell(
         const store = getStore();
         const cur = store.getState();
         if (cur.save.difficulty === d.key) return;
-        const updatedSave = { ...cur.save, difficulty: d.key };
-        if (d.key === 'sandbox' && updatedSave.fundsM < 999999) {
-          updatedSave.fundsM = 999999;
-        }
+        const updatedSave = {
+          ...cur.save,
+          difficulty: d.key,
+          fundsM: STARTING_FUNDS_M[d.key] ?? 60,
+        };
         writeSave(updatedSave);
         store.update({ save: updatedSave });
       });

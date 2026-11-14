@@ -4,6 +4,7 @@ import { transitionTo } from '@/state/flow';
 import { renderShell, mkPrimary } from '@/ui/components/shell';
 import { formatM } from '@/core/units';
 import { writeSave } from '@/economy/save-load';
+import { STARTING_FUNDS_M } from '@/config/constants';
 import type { Difficulty } from '@/types';
 
 export function renderHome(root: HTMLElement, state: GameState): void {
@@ -117,10 +118,11 @@ export function renderHome(root: HTMLElement, state: GameState): void {
     btn.addEventListener('click', (e) => {
       const chosen = (e.currentTarget as HTMLElement).getAttribute('data-diff') as Difficulty;
       if (!chosen || chosen === state.save.difficulty) return;
-      const updatedSave = { ...state.save, difficulty: chosen };
-      if (chosen === 'sandbox' && updatedSave.fundsM < 999999) {
-        updatedSave.fundsM = 999999;
-      }
+      const updatedSave = {
+        ...state.save,
+        difficulty: chosen,
+        fundsM: STARTING_FUNDS_M[chosen] ?? 60,
+      };
       writeSave(updatedSave);
       getStore().update({ save: updatedSave });
     });
