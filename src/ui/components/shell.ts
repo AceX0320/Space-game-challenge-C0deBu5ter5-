@@ -49,6 +49,8 @@ const SVG_SETTINGS = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none
   <path d="M8 1v2M8 13v2M1 8h2M13 8h2M2.93 2.93l1.41 1.41M11.66 11.66l1.41 1.41M2.93 13.07l1.41-1.41M11.66 4.34l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
+let lastRenderedFundsM: number | null = null;
+
 export interface ShellOptions {
   /** Left footer buttons */
   leftActions?: HTMLElement[];
@@ -141,10 +143,34 @@ export function renderShell(
   }
   header.appendChild(seg);
 
-  // Funds chip
+  // Funds chip with count / change transition
   const funds = document.createElement('div');
   funds.className = 'ls-funds';
-  funds.innerHTML = `<span class="ls-funds-label">Funds</span><span class="ls-funds-amount">${formatFunds(state.save.fundsM)}</span>`;
+  funds.style.cssText = 'padding: 4px 12px; gap: 8px; border: 1px solid var(--border);';
+  
+  const fundsLabel = document.createElement('span');
+  fundsLabel.className = 'ls-funds-label';
+  fundsLabel.textContent = 'Funds';
+  funds.appendChild(fundsLabel);
+
+  const amountEl = document.createElement('span');
+  amountEl.className = 'ls-funds-amount';
+  amountEl.textContent = formatFunds(state.save.fundsM);
+  funds.appendChild(amountEl);
+
+  if (lastRenderedFundsM !== null && lastRenderedFundsM !== state.save.fundsM) {
+    const isReduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    if (!isReduced) {
+      amountEl.style.color = state.save.fundsM > lastRenderedFundsM ? 'var(--ok)' : 'var(--danger)';
+      amountEl.style.transform = 'scale(1.15)';
+      setTimeout(() => {
+        amountEl.style.transform = 'scale(1)';
+        amountEl.style.color = 'var(--ok)';
+      }, 300);
+    }
+  }
+  lastRenderedFundsM = state.save.fundsM;
+
   header.appendChild(funds);
 
   // 3× icon buttons — SVG, no emoji
